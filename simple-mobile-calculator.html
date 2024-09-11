@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Простой калькулятор паллет и ящиков</title>
+    <style>
+        body { font-family: Arial, sans-serif; max-width: 400px; margin: 0 auto; padding: 20px; }
+        input { width: 100%; padding: 10px; font-size: 16px; margin-bottom: 10px; }
+        #results { background-color: #f0f0f0; padding: 15px; border-radius: 5px; font-size: 18px; }
+    </style>
+</head>
+<body>
+    <h2>Калькулятор паллет и ящиков</h2>
+    <input type="number" id="totalQuantity" placeholder="Общее количество" value="105000">
+    <input type="number" id="boxQuantity" placeholder="Количество в ящике" value="600">
+    <input type="number" id="palleteBoxes" placeholder="Ящиков на палете" value="48">
+    <button onclick="calculate()">Рассчитать</button>
+    <div id="results"></div>
+
+    <script>
+        function calculate() {
+            const totalQuantity = Number(document.getElementById('totalQuantity').value);
+            const boxQuantity = Number(document.getElementById('boxQuantity').value);
+            const palleteBoxes = Number(document.getElementById('palleteBoxes').value);
+
+            const totalBoxes = Math.ceil(totalQuantity / boxQuantity);
+            const fullPallets = Math.floor(totalBoxes / palleteBoxes);
+            const nextPalletBoxes = totalBoxes % palleteBoxes;
+            const lastBoxQuantity = totalQuantity % boxQuantity || boxQuantity;
+
+            const results = document.getElementById('results');
+            results.innerHTML = `
+                <p><strong>Всего ящиков:</strong> ${totalBoxes}</p>
+                <p><strong>Полных палет:</strong> ${fullPallets}</p>
+                <p><strong>В следующей палете:</strong> ${nextPalletBoxes} ящиков</p>
+                <p><strong>В последнем ящике:</strong> ${lastBoxQuantity} шт.</p>
+            `;
+        }
+
+        // Вызываем функцию calculate() при загрузке страницы
+        window.onload = calculate;
+    </script>
+</body>
+</html>
