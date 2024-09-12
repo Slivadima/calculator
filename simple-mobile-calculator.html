@@ -3,19 +3,20 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Простой калькулятор паллет и ящиков</title>
+    <title>Калькулятор паллет и ящиков</title>
     <style>
         body { font-family: Arial, sans-serif; max-width: 400px; margin: 0 auto; padding: 20px; }
         input { width: 100%; padding: 10px; font-size: 16px; margin-bottom: 10px; }
+        button { width: 100%; padding: 10px; font-size: 16px; margin-bottom: 10px; background-color: #4CAF50; color: white; border: none; cursor: pointer; }
         #results { background-color: #f0f0f0; padding: 15px; border-radius: 5px; font-size: 18px; }
     </style>
 </head>
 <body>
-    <h2>Калькулятор паллет и ящиків</h2>
-    <input type="number" id="totalQuantity" placeholder="Тираж">
-    <input type="number" id="boxQuantity" placeholder="Кількість у ящику">
-    <input type="number" id="palleteBoxes" placeholder="Ящиків на палете">
-    <button onclick="calculate()">Порахувати</button>
+    <h2>Калькулятор паллет и ящиков</h2>
+    <input type="number" id="totalQuantity" placeholder="Общее количество">
+    <input type="number" id="boxQuantity" placeholder="Количество в ящике">
+    <input type="number" id="palleteBoxes" placeholder="Ящиков на палете">
+    <button onclick="calculate()">Рассчитать</button>
     <div id="results"></div>
 
     <script>
@@ -28,13 +29,15 @@
             const fullPallets = Math.floor(totalBoxes / palleteBoxes);
             const nextPalletBoxes = totalBoxes % palleteBoxes;
             const lastBoxQuantity = totalQuantity % boxQuantity || boxQuantity;
+            const quantityPerPallet = palleteBoxes * boxQuantity;
 
             const results = document.getElementById('results');
             results.innerHTML = `
-                <p><strong>Всого ящиків:</strong> ${totalBoxes}</p>
-                <p><strong>Повних палет:</strong> ${fullPallets}</p>
-                <p><strong>В останній палете:</strong> ${nextPalletBoxes} ящиків</p>
-                <p><strong>В останнім ящике:</strong> ${lastBoxQuantity} шт.</p>
+                <p><strong>Всего ящиков:</strong> ${totalBoxes}</p>
+                <p><strong>Полных палет:</strong> ${fullPallets}</p>
+                <p><strong>Количество штук в палете:</strong> ${quantityPerPallet} шт.</p>
+                <p><strong>В последней палете:</strong> ${nextPalletBoxes} ящиков</p>
+                <p><strong>В последнем ящике:</strong> ${lastBoxQuantity} шт.</p>
             `;
         }
 
