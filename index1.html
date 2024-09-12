@@ -24,9 +24,9 @@
 
     <script>
         function calculate() {
-            const totalQuantity = Number(document.getElementById('totalQuantity').value);
-            const boxQuantity = Number(document.getElementById('boxQuantity').value);
-            const palleteBoxes = Number(document.getElementById('palleteBoxes').value);
+            let totalQuantity = Number(document.getElementById('totalQuantity').value);
+            let boxQuantity = Number(document.getElementById('boxQuantity').value);
+            let palleteBoxes = Number(document.getElementById('palleteBoxes').value);
 
             const errorMessage = document.getElementById('errorMessage');
             const results = document.getElementById('results');
@@ -34,12 +34,24 @@
             errorMessage.innerHTML = '';
             results.innerHTML = '';
 
-            // Валідація введених даних
-            if (totalQuantity <= 0 || boxQuantity <= 0 || palleteBoxes <= 0) {
-                errorMessage.innerHTML = 'Будь ласка, введіть дійсні позитивні числа у всі поля.';
+            // Валідація: перевіряємо, щоб принаймні два поля були заповнені
+            const filledFields = [totalQuantity, boxQuantity, palleteBoxes].filter(value => value > 0).length;
+
+            if (filledFields < 2) {
+                errorMessage.innerHTML = 'Будь ласка, заповніть принаймні два поля.';
                 return;
             }
 
+            // Логіка розрахунку, якщо одне з полів порожнє
+            if (!totalQuantity && boxQuantity && palleteBoxes) {
+                totalQuantity = boxQuantity * palleteBoxes; // Якщо не введено тираж, обчислюємо його
+            } else if (!boxQuantity && totalQuantity && palleteBoxes) {
+                boxQuantity = Math.ceil(totalQuantity / palleteBoxes); // Якщо не введено кількість у ящику, обчислюємо її
+            } else if (!palleteBoxes && totalQuantity && boxQuantity) {
+                palleteBoxes = Math.ceil(totalQuantity / boxQuantity); // Якщо не введено кількість ящиків на палеті, обчислюємо її
+            }
+
+            // Основні розрахунки
             const totalBoxes = safeValue(Math.ceil(totalQuantity / boxQuantity));
             const fullPallets = safeValue(Math.floor(totalBoxes / palleteBoxes));
             const nextPalletBoxes = safeValue(totalBoxes % palleteBoxes);
