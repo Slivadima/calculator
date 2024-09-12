@@ -21,13 +21,19 @@
 <body>
     <h2>Калькулятор палет і ящиків</h2>
     <input type="number" id="totalQuantity" placeholder="Тираж">
+    <label for="totalQuantity">Тираж:</label>
     <input type="number" id="boxQuantity" placeholder="Кількість у ящику">
+    <label for="boxQuantity">Кількість у ящику:</label>
     <input type="number" id="palleteBoxes" placeholder="Ящиків на палеті">
+    <label for="palleteBoxes">Ящиків на палеті:</label>
     <button onclick="calculate()">Розрахувати</button>
     <div id="results"></div>
     <div id="errorMessage" class="error"></div>
+    <div id="calculationHistory"></div>
 
     <script>
+        let calculationHistory = [];
+
         function calculate() {
             let totalQuantity = Number(document.getElementById('totalQuantity').value);
             let boxQuantity = Number(document.getElementById('boxQuantity').value);
@@ -35,6 +41,7 @@
 
             const errorMessage = document.getElementById('errorMessage');
             const results = document.getElementById('results');
+            const calculationHistoryDiv = document.getElementById('calculationHistory');
 
             errorMessage.innerHTML = '';
             results.innerHTML = '';
@@ -72,6 +79,36 @@
                 <p><strong>Палета №${nextPalletNumber}:</strong> ${nextPalletBoxes} ящиків</p>
                 <p><strong>В останньому ящику:</strong> ${lastBoxQuantity} шт.</p>
             `;
+
+            // Добавляем результат в историю расчётов
+            calculationHistory.push({
+                totalQuantity,
+                boxQuantity,
+                palleteBoxes,
+                totalBoxes,
+                fullPallets,
+                nextPalletBoxes,
+                lastBoxQuantity,
+                quantityPerPallet,
+                nextPalletNumber
+            });
+
+            calculationHistoryDiv.innerHTML = '';
+            calculationHistory.forEach((calculation, index) => {
+                calculationHistoryDiv.innerHTML += `
+                    <p>Расчёт #${index + 1}</p>
+                    <p>Тираж: ${calculation.totalQuantity}</p>
+                    <p>Кількість у ящику: ${calculation.boxQuantity}</p>
+                    <p>Ящиків на палеті: ${calculation.palleteBoxes}</p>
+                    <p>Усього ящиків: ${calculation.totalBoxes}</p>
+                    <p>Повних палет: ${calculation.fullPallets}</p>
+                    <p>Кількість продуції в палеті: ${calculation.quantityPerPallet} шт.</p>
+                    <p>Палета №${calculation.nextPalletNumber}:</p>
+                    <p>Ящиків: ${calculation.nextPalletBoxes}</p>
+                    <p>В останньому ящику:</p>
+                    <p>Ящиків: ${calculation.lastBoxQuantity} шт.</p>
+                `;
+            });
         }
 
         // Автоматический расчет при изменении данных
