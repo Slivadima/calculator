@@ -5,15 +5,60 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Калькулятор палет і ящиків</title>
     <style>
-        body { font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px; }
-        input { width: 100%; padding: 10px; font-size: 16px; margin-bottom: 10px; }
-        button { width: 100%; padding: 10px; font-size: 16px; margin-bottom: 10px; background-color: #4CAF50; color: white; border: none; cursor: pointer; }
+        body { 
+            font-family: Arial, sans-serif; 
+            max-width: 600px; 
+            margin: 0 auto; 
+            padding: 20px; 
+            box-sizing: border-box;
+        }
+        input { 
+            width: 100%; 
+            padding: 10px; 
+            font-size: 16px; 
+            margin-bottom: 10px; 
+            box-sizing: border-box;
+        }
+        button { 
+            width: 100%; 
+            padding: 10px; 
+            font-size: 16px; 
+            margin-bottom: 10px; 
+            background-color: #4CAF50; 
+            color: white; 
+            border: none; 
+            cursor: pointer; 
+        }
         button:active { background-color: #45a049; }
-        #results, #history { background-color: #f0f0f0; padding: 15px; border-radius: 5px; font-size: 16px; margin-bottom: 20px; }
+        #results, #history { 
+            background-color: #f0f0f0; 
+            padding: 15px; 
+            border-radius: 5px; 
+            font-size: 16px; 
+            margin-bottom: 20px; 
+            word-wrap: break-word;
+        }
         .error { color: red; }
         #clearHistory { background-color: #f44336; }
         #clearHistory:active { background-color: #d32f2f; }
-        .history-item { background-color: #ffffff; padding: 10px; border-radius: 5px; margin-bottom: 10px; }
+        .history-item { 
+            background-color: #ffffff; 
+            padding: 10px; 
+            border-radius: 5px; 
+            margin-bottom: 10px; 
+        }
+        @media (max-width: 480px) {
+            body { 
+                padding: 10px; 
+            }
+            input, button { 
+                font-size: 14px; 
+            }
+            #results, #history { 
+                font-size: 14px; 
+                padding: 10px; 
+            }
+        }
     </style>
 </head>
 <body>
