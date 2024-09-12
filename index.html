@@ -8,7 +8,9 @@
         body { font-family: Arial, sans-serif; max-width: 400px; margin: 0 auto; padding: 20px; }
         input { width: 100%; padding: 10px; font-size: 16px; margin-bottom: 10px; }
         button { width: 100%; padding: 10px; font-size: 16px; margin-bottom: 10px; background-color: #4CAF50; color: white; border: none; cursor: pointer; }
+        button:active { background-color: #45a049; }
         #results { background-color: #f0f0f0; padding: 15px; border-radius: 5px; font-size: 18px; }
+        .error { color: red; }
     </style>
 </head>
 <body>
@@ -18,21 +20,45 @@
     <input type="number" id="palleteBoxes" placeholder="Ящиків на палеті">
     <button onclick="calculate()">Розрахувати</button>
     <div id="results"></div>
+    <div id="errorMessage" class="error"></div>
 
     <script>
         function calculate() {
-            const totalQuantity = Number(document.getElementById('totalQuantity').value);
-            const boxQuantity = Number(document.getElementById('boxQuantity').value);
-            const palleteBoxes = Number(document.getElementById('palleteBoxes').value);
+            let totalQuantity = Number(document.getElementById('totalQuantity').value);
+            let boxQuantity = Number(document.getElementById('boxQuantity').value);
+            let palleteBoxes = Number(document.getElementById('palleteBoxes').value);
 
-            const totalBoxes = Math.ceil(totalQuantity / boxQuantity);
-            const fullPallets = Math.floor(totalBoxes / palleteBoxes);
-            const nextPalletBoxes = totalBoxes % palleteBoxes;
-            const lastBoxQuantity = totalQuantity % boxQuantity || boxQuantity;
-            const quantityPerPallet = palleteBoxes * boxQuantity;
+            const errorMessage = document.getElementById('errorMessage');
+            const results = document.getElementById('results');
+
+            errorMessage.innerHTML = '';
+            results.innerHTML = '';
+
+            // Валідація: перевіряємо, щоб принаймні два поля були заповнені
+            const filledFields = [totalQuantity, boxQuantity, palleteBoxes].filter(value => value > 0).length;
+
+            if (filledFields < 2) {
+                errorMessage.innerHTML = 'Будь ласка, заповніть принаймні два поля.';
+                return;
+            }
+
+            // Логіка розрахунку, якщо одне з полів порожнє
+            if (!totalQuantity && boxQuantity && palleteBoxes) {
+                totalQuantity = boxQuantity * palleteBoxes; // Якщо не введено тираж, обчислюємо його
+            } else if (!boxQuantity && totalQuantity && palleteBoxes) {
+                boxQuantity = Math.ceil(totalQuantity / palleteBoxes); // Якщо не введено кількість у ящику, обчислюємо її
+            } else if (!palleteBoxes && totalQuantity && boxQuantity) {
+                palleteBoxes = Math.ceil(totalQuantity / boxQuantity); // Якщо не введено кількість ящиків на палеті, обчислюємо її
+            }
+
+            // Основні розрахунки
+            const totalBoxes = safeValue(Math.ceil(totalQuantity / boxQuantity));
+            const fullPallets = safeValue(Math.floor(totalBoxes / palleteBoxes));
+            const nextPalletBoxes = safeValue(totalBoxes % palleteBoxes);
+            const lastBoxQuantity = safeValue(totalQuantity % boxQuantity || boxQuantity);
+            const quantityPerPallet = safeValue(palleteBoxes * boxQuantity);
             const nextPalletNumber = fullPallets + 1;
 
-            const results = document.getElementById('results');
             results.innerHTML = `
                 <p><strong>Усього ящиків:</strong> ${totalBoxes}</p>
                 <p><strong>Повних палет:</strong> ${fullPallets}</p>
@@ -42,8 +68,21 @@
             `;
         }
 
-        // Викликаємо функцію calculate() при завантаженні сторінки
-        window.onload = calculate;
+        // Перевіряємо на NaN і повертаємо 0 або пусте значення
+        function safeValue(value) {
+            return isNaN(value) ? '' : value;
+        }
+
+        // Викликаємо функцію calculate() при завантаженні сторінки, якщо всі поля заповнені
+        window.onload = function () {
+            const totalQuantity = document.getElementById('totalQuantity').value;
+            const boxQuantity = document.getElementById('boxQuantity').value;
+            const palleteBoxes = document.getElementById('palleteBoxes').value;
+
+            if (totalQuantity && boxQuantity && palleteBoxes) {
+                calculate();
+            }
+        };
     </script>
 </body>
 </html>
