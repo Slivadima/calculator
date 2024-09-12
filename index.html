@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html lang="uk">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Калькулятор палет і ящиків</title>
+    <style>
+        body { font-family: Arial, sans-serif; max-width: 400px; margin: 0 auto; padding: 20px; }
+        input { width: 100%; padding: 10px; font-size: 16px; margin-bottom: 10px; }
+        button { width: 100%; padding: 10px; font-size: 16px; margin-bottom: 10px; background-color: #4CAF50; color: white; border: none; cursor: pointer; }
+        #results { background-color: #f0f0f0; padding: 15px; border-radius: 5px; font-size: 18px; }
+    </style>
+</head>
+<body>
+    <h2>Калькулятор палет і ящиків</h2>
+    <input type="number" id="totalQuantity" placeholder="Загальна кількість">
+    <input type="number" id="boxQuantity" placeholder="Кількість у ящику">
+    <input type="number" id="palleteBoxes" placeholder="Ящиків на палеті">
+    <button onclick="calculate()">Розрахувати</button>
+    <div id="results"></div>
+
+    <script>
+        function calculate() {
+            const totalQuantity = Number(document.getElementById('totalQuantity').value);
+            const boxQuantity = Number(document.getElementById('boxQuantity').value);
+            const palleteBoxes = Number(document.getElementById('palleteBoxes').value);
+
+            const totalBoxes = Math.ceil(totalQuantity / boxQuantity);
+            const fullPallets = Math.floor(totalBoxes / palleteBoxes);
+            const nextPalletBoxes = totalBoxes % palleteBoxes;
+            const lastBoxQuantity = totalQuantity % boxQuantity || boxQuantity;
+            const quantityPerPallet = palleteBoxes * boxQuantity;
+            const nextPalletNumber = fullPallets + 1;
+
+            const results = document.getElementById('results');
+            results.innerHTML = `
+                <p><strong>Усього ящиків:</strong> ${totalBoxes}</p>
+                <p><strong>Повних палет:</strong> ${fullPallets}</p>
+                <p><strong>Кількість продуції в палеті:</strong> ${quantityPerPallet} шт.</p>
+                <p><strong>Палета №${nextPalletNumber}:</strong> ${nextPalletBoxes} ящиків</p>
+                <p><strong>В останньому ящику:</strong> ${lastBoxQuantity} шт.</p>
+            `;
+        }
+
+        // Викликаємо функцію calculate() при завантаженні сторінки
+        window.onload = calculate;
+    </script>
+</body>
+</html>
