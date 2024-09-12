@@ -11,6 +11,7 @@
         button:active { background-color: #45a049; }
         #results { background-color: #f0f0f0; padding: 15px; border-radius: 5px; font-size: 18px; }
         .error { color: red; }
+        #history { background-color: #f0f0f0; padding: 15px; border-radius: 5px; font-size: 16px; margin-bottom: 20px; }
     </style>
 </head>
 <body>
@@ -21,8 +22,11 @@
     <button onclick="calculate()">Розрахувати</button>
     <div id="results"></div>
     <div id="errorMessage" class="error"></div>
+    <div id="history"></div>
 
     <script>
+        let history = [];
+
         function calculate() {
             let totalQuantity = Number(document.getElementById('totalQuantity').value);
             let boxQuantity = Number(document.getElementById('boxQuantity').value);
@@ -30,6 +34,7 @@
 
             const errorMessage = document.getElementById('errorMessage');
             const results = document.getElementById('results');
+            const historyDiv = document.getElementById('history');
 
             errorMessage.innerHTML = '';
             results.innerHTML = '';
@@ -66,6 +71,24 @@
                 <p><strong>Палета №${nextPalletNumber}:</strong> ${nextPalletBoxes} ящиків</p>
                 <p><strong>В останньому ящику:</strong> ${lastBoxQuantity} шт.</p>
             `;
+
+            // Додаємо результат до історії
+            history.push({
+                totalQuantity,
+                boxQuantity,
+                palleteBoxes,
+                results: results.innerHTML
+            });
+
+            // Виводимо історію
+            historyDiv.innerHTML = '';
+            history.forEach((item, index) => {
+                historyDiv.innerHTML += `
+                    <p>Тираж: ${item.totalQuantity}, Кількість у ящику: ${item.boxQuantity}, Ящиків на палеті: ${item.palleteBoxes}</p>
+                    <p>${item.results}</p>
+                    <hr>
+                `;
+            });
         }
 
         // Перевіряємо на NaN і повертаємо 0 або пусте значення
