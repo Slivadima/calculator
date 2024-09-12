@@ -81,14 +81,14 @@
             });
 
             // Виводимо історію
-            historyDiv.innerHTML = '';
-            history.forEach((item, index) => {
-                historyDiv.innerHTML += `
-                    <p>Тираж: ${item.totalQuantity}, Кількість у ящику: ${item.boxQuantity}, Ящиків на палеті: ${item.palleteBoxes}</p>
-                    <p>${item.results}</p>
-                    <hr>
-                `;
-            });
+historyDiv.innerHTML = '';
+history.reverse().forEach((item, index) => {
+    historyDiv.innerHTML += `
+        <p>Тираж: ${item.totalQuantity}, Кількість у ящику: ${item.boxQuantity}, Ящиків на палеті: ${item.palleteBoxes}</p>
+        <p>${item.results}</p>
+        <hr>
+    `;
+});
         }
 
         // Перевіряємо на NaN і повертаємо 0 або пусте значення
