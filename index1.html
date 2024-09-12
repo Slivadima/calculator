@@ -11,29 +11,18 @@
         button:active { background-color: #45a049; }
         #results { background-color: #f0f0f0; padding: 15px; border-radius: 5px; font-size: 18px; }
         .error { color: red; }
-        @media (max-width: 768px) {
-            body { max-width: 100%; padding: 10px; }
-            input, button { font-size: 14px; }
-            #results { font-size: 16px; }
-        }
     </style>
 </head>
 <body>
     <h2>Калькулятор палет і ящиків</h2>
     <input type="number" id="totalQuantity" placeholder="Тираж">
-    <label for="totalQuantity">Тираж:</label>
     <input type="number" id="boxQuantity" placeholder="Кількість у ящику">
-    <label for="boxQuantity">Кількість у ящику:</label>
     <input type="number" id="palleteBoxes" placeholder="Ящиків на палеті">
-    <label for="palleteBoxes">Ящиків на палеті:</label>
     <button onclick="calculate()">Розрахувати</button>
     <div id="results"></div>
     <div id="errorMessage" class="error"></div>
-    <div id="calculationHistory"></div>
 
     <script>
-        let calculationHistory = [];
-
         function calculate() {
             let totalQuantity = Number(document.getElementById('totalQuantity').value);
             let boxQuantity = Number(document.getElementById('boxQuantity').value);
@@ -41,12 +30,11 @@
 
             const errorMessage = document.getElementById('errorMessage');
             const results = document.getElementById('results');
-            const calculationHistoryDiv = document.getElementById('calculationHistory');
 
             errorMessage.innerHTML = '';
             results.innerHTML = '';
 
-            // Проверяем, что хотя бы два поля заполнены
+            // Валідація: перевіряємо, щоб принаймні два поля були заповнені
             const filledFields = [totalQuantity, boxQuantity, palleteBoxes].filter(value => value > 0).length;
 
             if (filledFields < 2) {
@@ -54,16 +42,16 @@
                 return;
             }
 
-            // Если одно из полей не введено, обчисляем его
+            // Логіка розрахунку, якщо одне з полів порожнє
             if (!totalQuantity && boxQuantity && palleteBoxes) {
-                totalQuantity = boxQuantity * palleteBoxes;
+                totalQuantity = boxQuantity * palleteBoxes; // Якщо не введено тираж, обчислюємо його
             } else if (!boxQuantity && totalQuantity && palleteBoxes) {
-                boxQuantity = Math.ceil(totalQuantity / palleteBoxes);
+                boxQuantity = Math.ceil(totalQuantity / palleteBoxes); // Якщо не введено кількість у ящику, обчислюємо її
             } else if (!palleteBoxes && totalQuantity && boxQuantity) {
-                palleteBoxes = Math.ceil(totalQuantity / boxQuantity);
+                palleteBoxes = Math.ceil(totalQuantity / boxQuantity); // Якщо не введено кількість ящиків на палеті, обчислюємо її
             }
 
-            // Основные расчёты
+            // Основні розрахунки
             const totalBoxes = safeValue(Math.ceil(totalQuantity / boxQuantity));
             const fullPallets = safeValue(Math.floor(totalBoxes / palleteBoxes));
             const nextPalletBoxes = safeValue(totalBoxes % palleteBoxes);
@@ -71,7 +59,6 @@
             const quantityPerPallet = safeValue(palleteBoxes * boxQuantity);
             const nextPalletNumber = fullPallets + 1;
 
-            // Отображение результатов
             results.innerHTML = `
                 <p><strong>Усього ящиків:</strong> ${totalBoxes}</p>
                 <p><strong>Повних палет:</strong> ${fullPallets}</p>
@@ -79,49 +66,14 @@
                 <p><strong>Палета №${nextPalletNumber}:</strong> ${nextPalletBoxes} ящиків</p>
                 <p><strong>В останньому ящику:</strong> ${lastBoxQuantity} шт.</p>
             `;
-
-            // Добавляем результат в историю расчётов
-            calculationHistory.push({
-                totalQuantity,
-                boxQuantity,
-                palleteBoxes,
-                totalBoxes,
-                fullPallets,
-                nextPalletBoxes,
-                lastBoxQuantity,
-                quantityPerPallet,
-                nextPalletNumber
-            });
-
-            calculationHistoryDiv.innerHTML = '';
-            calculationHistory.forEach((calculation, index) => {
-                calculationHistoryDiv.innerHTML += `
-                    <p>Расчёт #${index + 1}</p>
-                    <p>Тираж: ${calculation.totalQuantity}</p>
-                    <p>Кількість у ящику: ${calculation.boxQuantity}</p>
-                    <p>Ящиків на палеті: ${calculation.palleteBoxes}</p>
-                    <p>Усього ящиків: ${calculation.totalBoxes}</p>
-                    <p>Повних палет: ${calculation.fullPallets}</p>
-                    <p>Кількість продуції в палеті: ${calculation.quantityPerPallet} шт.</p>
-                    <p>Палета №${calculation.nextPalletNumber}:</p>
-                    <p>Ящиків: ${calculation.nextPalletBoxes}</p>
-                    <p>В останньому ящику:</p>
-                    <p>Ящиків: ${calculation.lastBoxQuantity} шт.</p>
-                `;
-            });
         }
 
-        // Автоматический расчет при изменении данных
-        document.querySelectorAll('input').forEach(input => {
-            input.addEventListener('input', calculate);
-        });
-
-        // Проверка на NaN, возвращаем пустое значение
+        // Перевіряємо на NaN і повертаємо 0 або пусте значення
         function safeValue(value) {
             return isNaN(value) ? '' : value;
         }
 
-        // Запускаем расчет при загрузке страницы, если все поля заполнены
+        // Викликаємо функцію calculate() при завантаженні сторінки, якщо всі поля заповнені
         window.onload = function () {
             const totalQuantity = document.getElementById('totalQuantity').value;
             const boxQuantity = document.getElementById('boxQuantity').value;
