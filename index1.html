@@ -2,7 +2,6 @@
 <html lang="uk">
 <head>
     <meta charset="UTF-8">
-    <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Калькулятор палет і ящиків</title>
     <style>
@@ -12,8 +11,6 @@
         button:active { background-color: #45a049; }
         #results { background-color: #f0f0f0; padding: 15px; border-radius: 5px; font-size: 18px; }
         .error { color: red; }
-        .history { margin-top: 20px; background-color: #e0e0e0; padding: 10px; border-radius: 5px; }
-        .history-item { margin-bottom: 10px; padding: 5px; background-color: #fff; border-radius: 5px; }
         @media (max-width: 768px) {
             body { max-width: 100%; padding: 10px; }
             input, button { font-size: 14px; }
@@ -30,12 +27,7 @@
     <div id="results"></div>
     <div id="errorMessage" class="error"></div>
 
-    <h3>Історія розрахунків</h3>
-    <div id="history" class="history"></div>
-
     <script>
-        let history = [];
-
         function calculate() {
             let totalQuantity = Number(document.getElementById('totalQuantity').value);
             let boxQuantity = Number(document.getElementById('boxQuantity').value);
@@ -80,47 +72,12 @@
                 <p><strong>Палета №${nextPalletNumber}:</strong> ${nextPalletBoxes} ящиків</p>
                 <p><strong>В останньому ящику:</strong> ${lastBoxQuantity} шт.</p>
             `;
-
-            // Сохраняем результаты в историю
-            saveToHistory(totalQuantity, boxQuantity, palleteBoxes, totalBoxes, fullPallets, nextPalletBoxes, lastBoxQuantity);
-
-            // Отображаем историю
-            displayHistory();
         }
 
         // Автоматический расчет при изменении данных
         document.querySelectorAll('input').forEach(input => {
             input.addEventListener('input', calculate);
         });
-
-        // Сохраняем расчеты в историю
-        function saveToHistory(totalQuantity, boxQuantity, palleteBoxes, totalBoxes, fullPallets, nextPalletBoxes, lastBoxQuantity) {
-            const calculation = {
-                totalQuantity, boxQuantity, palleteBoxes, totalBoxes, fullPallets, nextPalletBoxes, lastBoxQuantity
-            };
-            history.push(calculation);
-        }
-
-        // Отображение истории расчетов
-        function displayHistory() {
-            const historyDiv = document.getElementById('history');
-            historyDiv.innerHTML = ''; // Очищаем перед обновлением
-            history.forEach(item => {
-                const div = document.createElement('div');
-                div.classList.add('history-item');
-                div.innerHTML = `
-                    <p><strong>Тираж:</strong> ${item.totalQuantity}</p>
-                    <p><strong>Кількість у ящику:</strong> ${item.boxQuantity}</p>
-                    <p><strong>Ящиків на палеті:</strong> ${item.palleteBoxes}</p>
-                    <p><strong>Усього ящиків:</strong> ${item.totalBoxes}</p>
-                    <p><strong>Повних палет:</strong> ${item.fullPallets}</p>
-                    <p><strong>Палета №${item.fullPallets + 1}:</strong> ${item.nextPalletBoxes} ящиків</p>
-                    <p><strong>В останньому ящику:</strong> ${item.lastBoxQuantity} шт.</p>
-                    <hr>
-                `;
-                historyDiv.appendChild(div);
-            });
-        }
 
         // Проверка на NaN, возвращаем пустое значение
         function safeValue(value) {
