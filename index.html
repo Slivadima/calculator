@@ -83,7 +83,6 @@
                     <h3>Історія розрахунків:</h3>
                     ${history.map((item, index) => `
                         <div class="history-item">
-                            <p><strong>Тираж:</strong> ${item.totalQuantity}, <strong>Кількість у ящику:</strong> ${item.boxQuantity}, <strong>Ящиків на палеті:</strong> ${item.palleteBoxes}</p>
                             ${item.results.replace('<h3>Поточний результат:</h3>', '')}
                         </div>
                     `).join('')}
