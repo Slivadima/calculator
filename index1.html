@@ -30,7 +30,7 @@
             cursor: pointer; 
         }
         button:active { background-color: #45a049; }
-        #results, #history, #fact { 
+        #results, #history { 
             background-color: #f0f0f0; 
             padding: 15px; 
             border-radius: 5px; 
@@ -46,15 +46,6 @@
             padding: 10px; 
             border-radius: 5px; 
             margin-bottom: 10px; 
-        }
-        .bar { 
-            background-color: #4CAF50; 
-            height: 20px; 
-            margin-bottom: 10px;
-        }
-        .bar-label { 
-            font-size: 14px; 
-            margin-bottom: 5px;
         }
         @media (max-width: 480px) {
             body { 
@@ -77,24 +68,11 @@
     <input type="number" id="palleteBoxes" placeholder="Ящиків на палеті">
     <button onclick="calculate()">Розрахувати</button>
     <div id="results"></div>
-    <div id="visualization"></div>
     <div id="history"></div>
-    <div id="fact"></div>
     <button id="clearHistory" onclick="clearHistory()">Очистити історію</button>
 
     <script>
         let history = [];
-        const logisticsFacts = [
-            "Приблизно 90% світової торгівлі здійснюється морськими шляхами.",
-            "Контейнерні перевезення — один з найдешевших способів транспортування товарів.",
-            "Вантажівки перевозять близько 70% усіх вантажів у США.",
-            "Логістика включає управління інформацією, запасами, транспортуванням і складськими операціями.",
-            "Щодня через світові порти проходять понад 20 мільйонів контейнерів."
-        ];
-
-        function getRandomFact() {
-            return logisticsFacts[Math.floor(Math.random() * logisticsFacts.length)];
-        }
 
         function calculate() {
             let totalQuantity = Number(document.getElementById('totalQuantity').value);
@@ -104,19 +82,19 @@
             const results = document.getElementById('results');
             results.innerHTML = '';
 
-            // Валідація: перевіряємо, щоб хоча б два поля були заповнені
+            // Валидация: проверяем, чтобы хотя бы два поля были заполнены
             const filledFields = [totalQuantity, boxQuantity, palleteBoxes].filter(value => value > 0).length;
             if (filledFields < 2) {
                 results.innerHTML = '<p class="error">Будь ласка, заповніть принаймні два поля.</p>';
                 return;
             }
 
-            // Логіка розрахунку, якщо одне з полів пусте
+            // Логика расчета, если одно из полей пустое
             if (isNaN(totalQuantity)) totalQuantity = boxQuantity * palleteBoxes;
             else if (isNaN(boxQuantity)) boxQuantity = Math.ceil(totalQuantity / palleteBoxes);
             else if (isNaN(palleteBoxes)) palleteBoxes = Math.ceil(totalQuantity / boxQuantity);
 
-            // Основні розрахунки
+            // Основные расчеты
             const totalBoxes = Math.ceil(totalQuantity / boxQuantity);
             const fullPallets = Math.floor(totalBoxes / palleteBoxes);
             const nextPalletBoxes = totalBoxes % palleteBoxes;
@@ -124,7 +102,7 @@
             const quantityPerPallet = palleteBoxes * boxQuantity;
             const nextPalletNumber = fullPallets + 1;
 
-            // Заміняємо NaN і Infinity на прочерк
+            // Замена NaN и Infinity на прочерк
             const safeValue = (value) => (isNaN(value) || !isFinite(value)) ? '—' : value;
 
             const resultHTML = `
@@ -132,36 +110,18 @@
                 <p><strong>Тираж:</strong> ${safeValue(totalQuantity)}, <strong>Кількість у ящику:</strong> ${safeValue(boxQuantity)}, <strong>Ящиків на палеті:</strong> ${safeValue(palleteBoxes)}</p>
                 <p><strong>Усього ящиків:</strong> ${safeValue(totalBoxes)}</p>
                 <p><strong>Повних палет:</strong> ${safeValue(fullPallets)}</p>
-                <p><strong>Кількість продукції в палеті:</strong> ${safeValue(quantityPerPallet)} шт.</p>
+                <p><strong>Кількість продуції в палеті:</strong> ${safeValue(quantityPerPallet)} шт.</p>
                 <p><strong>Палета №${safeValue(nextPalletNumber)}:</strong> ${safeValue(nextPalletBoxes)} ящиків</p>
                 <p><strong>В останньому ящику:</strong> ${safeValue(lastBoxQuantity)} шт.</p>
             `;
 
             results.innerHTML = resultHTML;
 
-            // Додавання в історію
+            // Добавляем результат в начало истории
             history.unshift({ totalQuantity, boxQuantity, palleteBoxes, results: resultHTML });
             if (history.length > 10) history.pop();
 
             updateHistoryDisplay();
-            visualizeResults(fullPallets, nextPalletBoxes);
-            displayFact();
-        }
-
-        function visualizeResults(fullPallets, nextPalletBoxes) {
-            const visualization = document.getElementById('visualization');
-            visualization.innerHTML = `
-                <h3>Візуалізація результатів:</h3>
-                <div class="bar-label">Повні палети: ${fullPallets}</div>
-                <div class="bar" style="width: ${Math.min(fullPallets * 10, 100)}%;"></div>
-                <div class="bar-label">Ящиків у наступній палеті: ${nextPalletBoxes}</div>
-                <div class="bar" style="width: ${Math.min(nextPalletBoxes * 10, 100)}%;"></div>
-            `;
-        }
-
-        function displayFact() {
-            const factDiv = document.getElementById('fact');
-            factDiv.innerHTML = `<h3>Випадковий факт про логістику:</h3><p>${getRandomFact()}</p>`;
         }
 
         function updateHistoryDisplay() {
