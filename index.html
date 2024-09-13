@@ -72,82 +72,87 @@
     <button id="clearHistory" onclick="clearHistory()">Очистити історію</button>
 
     <script>
-        let history = [];
+        let history = JSON.parse(localStorage.getItem('calculationHistory')) || [];
 
-        function calculate() {
-            let totalQuantity = Number(document.getElementById('totalQuantity').value);
-            let boxQuantity = Number(document.getElementById('boxQuantity').value);
-            let palleteBoxes = Number(document.getElementById('palleteBoxes').value);
+function calculate() {
+    let totalQuantity = Number(document.getElementById('totalQuantity').value);
+    let boxQuantity = Number(document.getElementById('boxQuantity').value);
+    let palleteBoxes = Number(document.getElementById('palleteBoxes').value);
 
-            const results = document.getElementById('results');
-            results.innerHTML = '';
+    const results = document.getElementById('results');
+    results.innerHTML = '';
 
-            // Валидация: проверяем, чтобы хотя бы два поля были заполнены
-            const filledFields = [totalQuantity, boxQuantity, palleteBoxes].filter(value => value > 0).length;
-            if (filledFields < 2) {
-                results.innerHTML = '<p class="error">Будь ласка, заповніть принаймні два поля.</p>';
-                return;
-            }
+    // Валідація: перевіряємо, щоб хоча б два поля були заповнені
+    const filledFields = [totalQuantity, boxQuantity, palleteBoxes].filter(value => value > 0).length;
+    if (filledFields < 2) {
+        results.innerHTML = '<p class="error">Будь ласка, заповніть принаймні два поля.</p>';
+        return;
+    }
 
-            // Логика расчета, если одно из полей пустое
-            if (isNaN(totalQuantity)) totalQuantity = boxQuantity * palleteBoxes;
-            else if (isNaN(boxQuantity)) boxQuantity = Math.ceil(totalQuantity / palleteBoxes);
-            else if (isNaN(palleteBoxes)) palleteBoxes = Math.ceil(totalQuantity / boxQuantity);
+    // Логіка розрахунку, якщо одне з полів пусте
+    if (isNaN(totalQuantity)) totalQuantity = boxQuantity * palleteBoxes;
+    else if (isNaN(boxQuantity)) boxQuantity = Math.ceil(totalQuantity / palleteBoxes);
+    else if (isNaN(palleteBoxes)) palleteBoxes = Math.ceil(totalQuantity / boxQuantity);
 
-            // Основные расчеты
-            const totalBoxes = Math.ceil(totalQuantity / boxQuantity);
-            const fullPallets = Math.floor(totalBoxes / palleteBoxes);
-            const nextPalletBoxes = totalBoxes % palleteBoxes;
-            const lastBoxQuantity = totalQuantity % boxQuantity || boxQuantity;
-            const quantityPerPallet = palleteBoxes * boxQuantity;
-            const nextPalletNumber = fullPallets + 1;
+    // Основні розрахунки
+    const totalBoxes = Math.ceil(totalQuantity / boxQuantity);
+    const fullPallets = Math.floor(totalBoxes / palleteBoxes);
+    const nextPalletBoxes = totalBoxes % palleteBoxes;
+    const lastBoxQuantity = totalQuantity % boxQuantity || boxQuantity;
+    const quantityPerPallet = palleteBoxes * boxQuantity;
+    const nextPalletNumber = fullPallets + 1;
 
-            const resultHTML = `
-                <h3>Поточний результат:</h3>
-                <p><strong>Тираж:</strong> ${totalQuantity}, <strong>Кількість у ящику:</strong> ${boxQuantity}, <strong>Ящиків на палеті:</strong> ${palleteBoxes}</p>
-                <p><strong>Усього ящиків:</strong> ${totalBoxes}</p>
-                <p><strong>Повних палет:</strong> ${fullPallets}</p>
-                <p><strong>Кількість продуції в палеті:</strong> ${quantityPerPallet} шт.</p>
-                <p><strong>Палета №${nextPalletNumber}:</strong> ${nextPalletBoxes} ящиків</p>
-                <p><strong>В останньому ящику:</strong> ${lastBoxQuantity} шт.</p>
-            `;
+    // Заміняємо NaN і Infinity на прочерк
+    const safeValue = (value) => (isNaN(value) || !isFinite(value)) ? '—' : value;
 
-            results.innerHTML = resultHTML;
+    const resultHTML = `
+        <h3>Поточний результат:</h3>
+        <p><strong>Тираж:</strong> ${safeValue(totalQuantity)}, <strong>Кількість у ящику:</strong> ${safeValue(boxQuantity)}, <strong>Ящиків на палеті:</strong> ${safeValue(palleteBoxes)}</p>
+        <p><strong>Усього ящиків:</strong> ${safeValue(totalBoxes)}</p>
+        <p><strong>Повних палет:</strong> ${safeValue(fullPallets)}</p>
+        <p><strong>Кількість продукції в палеті:</strong> ${safeValue(quantityPerPallet)} шт.</p>
+        <p><strong>Палета №${safeValue(nextPalletNumber)}:</strong> ${safeValue(nextPalletBoxes)} ящиків</p>
+        <p><strong>В останньому ящику:</strong> ${safeValue(lastBoxQuantity)} шт.</p>
+    `;
 
-            // Добавляем результат в начало истории
-            history.unshift({ totalQuantity, boxQuantity, palleteBoxes, results: resultHTML });
-            if (history.length > 10) history.pop();
+    results.innerHTML = resultHTML;
 
-            updateHistoryDisplay();
-        }
+    // Додавання в історію
+    history.unshift({ totalQuantity, boxQuantity, palleteBoxes, results: resultHTML });
+    if (history.length > 10) history.pop();
 
-        function updateHistoryDisplay() {
-            const historyDiv = document.getElementById('history');
-            if (history.length > 0) {
-                historyDiv.innerHTML = `
-                    <h3>Історія розрахунків:</h3>
-                    ${history.map((item, index) => `
-                        <div class="history-item">
-                            ${item.results.replace('<h3>Поточний результат:</h3>', '')}
-                        </div>
-                    `).join('')}
-                `;
-            } else {
-                historyDiv.innerHTML = '';
-            }
-        }
+    // Збереження історії в localStorage
+    localStorage.setItem('calculationHistory', JSON.stringify(history));
 
-        function clearHistory() {
-            history = [];
-            updateHistoryDisplay();
-        }
+    updateHistoryDisplay();
+}
 
-        window.onload = function () {
-            const inputs = ['totalQuantity', 'boxQuantity', 'palleteBoxes'];
-            if (inputs.every(id => document.getElementById(id).value)) {
-                calculate();
-            }
-        };
+function updateHistoryDisplay() {
+    const historyDiv = document.getElementById('history');
+    if (history.length > 0) {
+        historyDiv.innerHTML = `
+            <h3>Історія розрахунків:</h3>
+            ${history.map((item, index) => `
+                <div class="history-item">
+                    ${item.results.replace('<h3>Поточний результат:</h3>', '')}
+                </div>
+            `).join('')}
+        `;
+    } else {
+        historyDiv.innerHTML = '';
+    }
+}
+
+function clearHistory() {
+    history = [];
+    localStorage.removeItem('calculationHistory');
+    updateHistoryDisplay();
+}
+
+window.onload = function () {
+    updateHistoryDisplay();
+};
+
     </script>
 </body>
 </html>
