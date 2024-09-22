@@ -109,11 +109,12 @@ function calculate() {
         <h3>Поточний результат:</h3>
         <p><strong>Повних палет:</strong> ${safeValue(fullPallets)}</p>
         <p><strong>Палета №${safeValue(nextPalletNumber)}:</strong> ${safeValue(nextPalletBoxes)} ящиків</p>
+        <p><strong>В останньому ящику:</strong> ${safeValue(lastBoxQuantity)} шт.</p>
         <p><strong>Усього ящиків:</strong> ${safeValue(totalBoxes)}</p>
         <p><strong>Кількість продукції в палеті:</strong> ${safeValue(quantityPerPallet)} шт.</p>
         <p><strong>Тираж:</strong> ${safeValue(totalQuantity)}, <strong>Кількість у ящику:</strong> ${safeValue(boxQuantity)}, <strong>Ящиків на палеті:</strong> ${safeValue(palleteBoxes)}</p>
         
-        <p><strong>В останньому ящику:</strong> ${safeValue(lastBoxQuantity)} шт.</p>
+        
     `;
 
     results.innerHTML = resultHTML;
