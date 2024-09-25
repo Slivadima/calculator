@@ -97,24 +97,22 @@ function calculate() {
     // Основні розрахунки
     const totalBoxes = Math.ceil(totalQuantity / boxQuantity);
     const fullPallets = Math.floor(totalBoxes / palleteBoxes);
-    const nextPalletBoxes = totalBoxes % palleteBoxes;
+    const lastPalletBoxes = totalBoxes % palleteBoxes;
     const lastBoxQuantity = totalQuantity % boxQuantity || boxQuantity;
     const quantityPerPallet = palleteBoxes * boxQuantity;
-    const nextPalletNumber = fullPallets + 1;
 
     // Заміняємо NaN і Infinity на прочерк
     const safeValue = (value) => (isNaN(value) || !isFinite(value)) ? '—' : value;
 
+    // Новий формат виводу
+    const resultString = `${safeValue(fullPallets)}п + ${safeValue(lastPalletBoxes)}ящ + ${safeValue(lastBoxQuantity)} шт`;
+
     const resultHTML = `
-        <h3>Поточний результат:</h3>
-        <p><strong>Повних палет:</strong> ${safeValue(fullPallets)}</p>
-        <p><strong>Палета №${safeValue(nextPalletNumber)}:</strong> ${safeValue(nextPalletBoxes)} ящиків</p>
-        <p><strong>В останньому ящику:</strong> ${safeValue(lastBoxQuantity)} шт.</p>
-        <p><strong>Усього ящиків:</strong> ${safeValue(totalBoxes)}</p>
-        <p><strong>Кількість продукції в палеті:</strong> ${safeValue(quantityPerPallet)} шт.</p>
+        <h3>Результат:</h3>
+        <p><strong>Розрахунок:</strong> ${resultString}</p>
+        <p><strong>Кількість продукції в палеті:</strong> ${safeValue(quantityPerPallet)} шт</p>
+        <p><strong>Усього ящиків:</strong> ${safeValue(totalBoxes)} шт</p>
         <p><strong>Тираж:</strong> ${safeValue(totalQuantity)}, <strong>Кількість у ящику:</strong> ${safeValue(boxQuantity)}, <strong>Ящиків на палеті:</strong> ${safeValue(palleteBoxes)}</p>
-        
-        
     `;
 
     results.innerHTML = resultHTML;
@@ -136,7 +134,7 @@ function updateHistoryDisplay() {
             <h3>Історія розрахунків:</h3>
             ${history.map((item, index) => `
                 <div class="history-item">
-                    ${item.results.replace('<h3>Поточний результат:</h3>', '')}
+                    ${item.results.replace('<h3>Результат:</h3>', '')}
                 </div>
             `).join('')}
         `;
