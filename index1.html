@@ -97,14 +97,14 @@ function calculate() {
     // Основні розрахунки
     const totalBoxes = Math.ceil(totalQuantity / boxQuantity);
     const fullPallets = Math.floor(totalBoxes / palleteBoxes);
-    const remainingBoxes = totalBoxes % palleteBoxes || palleteBoxes;  // Включаємо неповний ящик
+    const remainingBoxes = totalBoxes % palleteBoxes;
     const lastBoxQuantity = totalQuantity % boxQuantity || boxQuantity;
     const quantityPerPallet = palleteBoxes * boxQuantity;
 
     // Заміняємо NaN і Infinity на прочерк
     const safeValue = (value) => (isNaN(value) || !isFinite(value)) ? '—' : value;
 
-    // Формат виводу
+    // Новий формат виводу
     const resultString = `${safeValue(fullPallets)}п + ${safeValue(remainingBoxes)}ящ + ${safeValue(lastBoxQuantity)} шт`;
 
     const resultHTML = `
