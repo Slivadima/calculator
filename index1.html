@@ -5,6 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Калькулятор палет і ящиків</title>
     <style>
+        /* Стили остаются без изменений */
         body { 
             font-family: Arial, sans-serif; 
             max-width: 600px; 
@@ -110,12 +111,12 @@ function calculate() {
         resultString += `${safeValue(fullPallets)}п`;
         if (remainingBoxes > 0 || lastBoxQuantity > 0) resultString += ' + ';
     }
-    if (remainingBoxes > 0) {
-        resultString += `${safeValue(remainingBoxes)}ящ`;
+    if (remainingBoxes > 1) {
+        resultString += `${safeValue(remainingBoxes - 1)}ящ`;
         if (lastBoxQuantity > 0) resultString += ' + ';
     }
-    if (lastBoxQuantity > 0) {
-        resultString += `${safeValue(lastBoxQuantity)} шт`;
+    if (lastBoxQuantity > 0 || remainingBoxes > 0) {
+        resultString += `1ящ-${safeValue(lastBoxQuantity > 0 ? lastBoxQuantity : boxQuantity)} шт`;
     }
     if (resultString === '') resultString = '0';
 
