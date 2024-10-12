@@ -48,6 +48,14 @@
             border-radius: 5px; 
             margin-bottom: 10px; 
         }
+        #wishesOfTheDay {
+            font-style: italic;
+            color: #1a5f7a;
+            margin-top: 15px;
+            padding: 10px;
+            background-color: #e6f7ff;
+            border-radius: 5px;
+        }
         @media (max-width: 480px) {
             body { 
                 padding: 10px; 
@@ -126,6 +134,9 @@ function calculate() {
         <p><strong>Кількість продукції в палеті:</strong> ${safeValue(quantityPerPallet)} шт</p>
         <p><strong>Усього ящиків:</strong> ${safeValue(totalBoxes)} шт</p>
         <p><strong>Тираж:</strong> ${safeValue(totalQuantity)}, <strong>Кількість у ящику:</strong> ${safeValue(boxQuantity)}, <strong>Ящиків на палеті:</strong> ${safeValue(palleteBoxes)}</p>
+        <div id="wishesOfTheDay">
+            ${generateWishesOfTheDay()}
+        </div>
     `;
 
     results.innerHTML = resultHTML;
@@ -138,6 +149,21 @@ function calculate() {
     localStorage.setItem('calculationHistory', JSON.stringify(history));
 
     updateHistoryDisplay();
+}
+
+function generateWishesOfTheDay() {
+    const wishes = [
+        "Нехай сьогодні ваші справи йдуть так само гладко, як ці розрахунки!",
+        "Бажаємо, щоб ваші досягнення перевершили навіть найсміливіші плани!",
+        "Нехай кожен ящик буде повний успіху, а кожна палета — нових можливостей!",
+        "Сьогодні чудовий день для нових звершень. Вперед до нових висот!"
+    ];
+    
+    let result = "<h4>Побажання дня:</h4>";
+    for (let i = 0; i < 4; i++) {
+        result += `<p>${wishes[Math.floor(Math.random() * wishes.length)]}</p>`;
+    }
+    return result;
 }
 
 function updateHistoryDisplay() {
