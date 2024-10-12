@@ -82,6 +82,7 @@
 
     <script>
         let history = JSON.parse(localStorage.getItem('calculationHistory')) || [];
+        let usedWishes = JSON.parse(localStorage.getItem('usedWishes')) || [];
 
 function calculate() {
     let totalQuantity = Number(document.getElementById('totalQuantity').value);
@@ -113,7 +114,7 @@ function calculate() {
     // Заміняємо NaN і Infinity на прочерк
     const safeValue = (value) => (isNaN(value) || !isFinite(value)) ? '—' : value;
 
-    // Новий формат виводу
+    // Новий формат виводу з пробілами
     let resultString = '';
     if (fullPallets > 0) {
         resultString += `${safeValue(fullPallets)}п`;
@@ -124,7 +125,7 @@ function calculate() {
         if (lastBoxQuantity > 0) resultString += ' + ';
     }
     if (lastBoxQuantity > 0 || remainingBoxes > 0) {
-        resultString += `1ящ-${safeValue(lastBoxQuantity > 0 ? lastBoxQuantity : boxQuantity)} шт`;
+        resultString += `1ящ - ${safeValue(lastBoxQuantity > 0 ? lastBoxQuantity : boxQuantity)} шт`;
     }
     if (resultString === '') resultString = '0';
 
@@ -153,13 +154,27 @@ function calculate() {
 
 function generateWishesOfTheDay() {
     const wishes = [
-        "Нехай сьогодні твої справи йдуть так само гладко, як ці розрахунки!",
-        "Бажаю, щоб твої досягнення перевершили навіть найсміливіші плани!",
-        "Нехай кожен ящик буде повний успіху, а кожна палета — нових можливостей!",
-        "Сьогодні чудовий день для нових звершень. Вперед до нових висот!"
+        "Нехай твої розрахунки завжди будуть такими ж точними, як цей калькулятор!",
+        "Бажаю, щоб кожен твій проект був успішним, як ці обчислення!",
+        "Нехай твої ідеї множаться швидше, ніж цифри в цьому розрахунку!",
+        "Хай твої досягнення стають все більшими, як ці числа в калькуляторі!",
+        "Бажаю, щоб твої плани складалися так же легко, як ці підрахунки!",
+        "Нехай твої успіхи будуть такими ж вражаючими, як результати цих обчислень!",
+        "Хай кожен твій крок буде таким же впевненим, як ці розрахунки!",
+        "Бажаю, щоб твої рішення завжди були такими ж точними, як цей калькулятор!"
     ];
     
-    return `<h4>Побажання Ленусіку!</h4><p>${wishes[Math.floor(Math.random() * wishes.length)]}</p>`;
+    let availableWishes = wishes.filter(wish => !usedWishes.includes(wish));
+    if (availableWishes.length === 0) {
+        usedWishes = [];
+        availableWishes = wishes;
+    }
+    
+    const selectedWish = availableWishes[Math.floor(Math.random() * availableWishes.length)];
+    usedWishes.push(selectedWish);
+    localStorage.setItem('usedWishes', JSON.stringify(usedWishes));
+    
+    return `<h4>Побажання Ленусіку!</h4><p>${selectedWish}</p>`;
 }
 
 function updateHistoryDisplay() {
