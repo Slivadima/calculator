@@ -1,89 +1,3 @@
-<!DOCTYPE html>
-<html lang="uk">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Калькулятор палет і ящиків</title>
-    <style>
-        /* Стили остаются без изменений */
-        body { 
-            font-family: Arial, sans-serif; 
-            max-width: 600px; 
-            margin: 0 auto; 
-            padding: 20px; 
-            box-sizing: border-box;
-        }
-        input { 
-            width: 100%; 
-            padding: 10px; 
-            font-size: 16px; 
-            margin-bottom: 10px; 
-            box-sizing: border-box;
-        }
-        button { 
-            width: 100%; 
-            padding: 10px; 
-            font-size: 16px; 
-            margin-bottom: 10px; 
-            background-color: #4CAF50; 
-            color: white; 
-            border: none; 
-            cursor: pointer; 
-        }
-        button:active { background-color: #45a049; }
-        #results, #history { 
-            background-color: #f0f0f0; 
-            padding: 15px; 
-            border-radius: 5px; 
-            font-size: 16px; 
-            margin-bottom: 20px; 
-            word-wrap: break-word;
-        }
-        .error { color: red; }
-        #clearHistory { background-color: #f44336; }
-        #clearHistory:active { background-color: #d32f2f; }
-        .history-item { 
-            background-color: #ffffff; 
-            padding: 10px; 
-            border-radius: 5px; 
-            margin-bottom: 10px; 
-        }
-        #wishesOfTheDay {
-            font-style: italic;
-            color: #1a5f7a;
-            margin-top: 15px;
-            padding: 10px;
-            background-color: #e6f7ff;
-            border-radius: 5px;
-        }
-        @media (max-width: 480px) {
-            body { 
-                padding: 10px; 
-            }
-            input, button { 
-                font-size: 14px; 
-            }
-            #results, #history { 
-                font-size: 14px; 
-                padding: 10px; 
-            }
-        }
-    </style>
-</head>
-<body>
-    <h2>Калькулятор палет і ящиків</h2>
-    <input type="number" id="totalQuantity" placeholder="Тираж">
-    <input type="number" id="boxQuantity" placeholder="Кількість у ящику">
-    <input type="number" id="palleteBoxes" placeholder="Ящиків на палеті">
-    <button onclick="calculate()">Розрахувати</button>
-    <div id="results"></div>
-    <div id="history"></div>
-    <button id="clearHistory" onclick="clearHistory()">Очистити історію</button>
-
-    <script>
-        let history = JSON.parse(localStorage.getItem('calculationHistory')) || [];
-        let usedWishes = JSON.parse(localStorage.getItem('usedWishes')) || [];
-
 function calculate() {
     let totalQuantity = Number(document.getElementById('totalQuantity').value);
     let boxQuantity = Number(document.getElementById('boxQuantity').value);
@@ -114,18 +28,23 @@ function calculate() {
     // Заміняємо NaN і Infinity на прочерк
     const safeValue = (value) => (isNaN(value) || !isFinite(value)) ? '—' : value;
 
-    // Новий формат виводу з пробілами
+    // Оновлений формат виводу з пробілами та об'єднанням повних ящиків
     let resultString = '';
     if (fullPallets > 0) {
         resultString += `${safeValue(fullPallets)}п`;
-        if (remainingBoxes > 0 || lastBoxQuantity > 0) resultString += ' + ';
+        if (remainingBoxes > 0) resultString += ' + ';
     }
-    if (remainingBoxes > 1) {
-        resultString += `${safeValue(remainingBoxes - 1)}ящ`;
-        if (lastBoxQuantity > 0) resultString += ' + ';
-    }
-    if (lastBoxQuantity > 0 || remainingBoxes > 0) {
-        resultString += `1ящ - ${safeValue(lastBoxQuantity > 0 ? lastBoxQuantity : boxQuantity)} шт`;
+    if (remainingBoxes > 0) {
+        if (lastBoxQuantity === 0) {
+            // Якщо останній ящик повний, просто додаємо його до загальної кількості ящиків
+            resultString += `${safeValue(remainingBoxes)}ящ`;
+        } else {
+            // Якщо останній ящик неповний, вказуємо окремо
+            if (remainingBoxes > 1) {
+                resultString += `${safeValue(remainingBoxes - 1)}ящ + `;
+            }
+            resultString += `1ящ - ${safeValue(lastBoxQuantity)} шт`;
+        }
     }
     if (resultString === '') resultString = '0';
 
@@ -151,58 +70,3 @@ function calculate() {
 
     updateHistoryDisplay();
 }
-
-function generateWishesOfTheDay() {
-    const wishes = [
-        "Нехай твої розрахунки завжди будуть такими ж точними, як цей калькулятор!",
-        "Бажаю, щоб кожен твій проект був успішним, як ці обчислення!",
-        "Нехай твої ідеї множаться швидше, ніж цифри в цьому розрахунку!",
-        "Хай твої досягнення стають все більшими, як ці числа в калькуляторі!",
-        "Бажаю, щоб твої плани складалися так же легко, як ці підрахунки!",
-        "Нехай твої успіхи будуть такими ж вражаючими, як результати цих обчислень!",
-        "Хай кожен твій крок буде таким же впевненим, як ці розрахунки!",
-        "Бажаю, щоб твої рішення завжди були такими ж точними, як цей калькулятор!"
-    ];
-    
-    let availableWishes = wishes.filter(wish => !usedWishes.includes(wish));
-    if (availableWishes.length === 0) {
-        usedWishes = [];
-        availableWishes = wishes;
-    }
-    
-    const selectedWish = availableWishes[Math.floor(Math.random() * availableWishes.length)];
-    usedWishes.push(selectedWish);
-    localStorage.setItem('usedWishes', JSON.stringify(usedWishes));
-    
-    return `<h4>Побажання Ленусіку!</h4><p>${selectedWish}</p>`;
-}
-
-function updateHistoryDisplay() {
-    const historyDiv = document.getElementById('history');
-    if (history.length > 0) {
-        historyDiv.innerHTML = `
-            <h3>Історія розрахунків:</h3>
-            ${history.map((item, index) => `
-                <div class="history-item">
-                    ${item.results.replace('<h3>Результат:</h3>', '')}
-                </div>
-            `).join('')}
-        `;
-    } else {
-        historyDiv.innerHTML = '';
-    }
-}
-
-function clearHistory() {
-    history = [];
-    localStorage.removeItem('calculationHistory');
-    updateHistoryDisplay();
-}
-
-window.onload = function () {
-    updateHistoryDisplay();
-};
-
-    </script>
-</body>
-</html>
