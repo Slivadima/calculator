@@ -81,7 +81,6 @@
 
     <script>
         let history = JSON.parse(localStorage.getItem('calculationHistory')) || [];
-        let usedWishes = JSON.parse(localStorage.getItem('usedWishes')) || [];
 
         function calculate() {
             let totalQuantity = Number(document.getElementById('totalQuantity').value);
@@ -157,28 +156,24 @@
         }
 
         function generateWishesOfTheDay() {
-            const wishes = [
-                "Нехай твої розрахунки завжди будуть такими ж точними, як цей калькулятор!",
-                "Бажаю, щоб кожен твій проект був успішним, як ці обчислення!",
-                "Нехай твої ідеї множаться швидше, ніж цифри в цьому розрахунку!",
-                "Хай твої досягнення стають все більшими, як ці числа в калькуляторі!",
-                "Бажаю, щоб твої плани складалися так же легко, як ці підрахунки!",
-                "Нехай твої успіхи будуть такими ж вражаючими, як результати цих обчислень!",
-                "Хай кожен твій крок буде таким же впевненим, як ці розрахунки!",
-                "Бажаю, щоб твої рішення завжди були такими ж точними, як цей калькулятор!"
+            const subjects = ["твої розрахунки", "твої проекти", "твої ідеї", "твої досягнення", "твої плани", "твої успіхи", "твої кроки", "твої рішення"];
+            const adjectives = ["точними", "успішними", "швидкими", "величними", "легкими", "вражаючими", "впевненими", "мудрими"];
+            const comparisons = ["як цей калькулятор", "як ці обчислення", "ніж цифри в цьому розрахунку", "як ці числа в калькуляторі", "як ці підрахунки", "як результати цих обчислень", "як ці розрахунки"];
+            
+            const randomSubject = subjects[Math.floor(Math.random() * subjects.length)];
+            const randomAdjective = adjectives[Math.floor(Math.random() * adjectives.length)];
+            const randomComparison = comparisons[Math.floor(Math.random() * comparisons.length)];
+            
+            const wishTemplates = [
+                `Нехай ${randomSubject} завжди будуть такими ж ${randomAdjective}, ${randomComparison}!`,
+                `Бажаю, щоб ${randomSubject} були ${randomAdjective}, як ${randomComparison}!`,
+                `Хай ${randomSubject} стають все більш ${randomAdjective}, ${randomComparison}!`,
+                `Нехай ${randomSubject} множаться та стають ${randomAdjective}, швидше ніж ${randomComparison}!`
             ];
             
-            let availableWishes = wishes.filter(wish => !usedWishes.includes(wish));
-            if (availableWishes.length === 0) {
-                usedWishes = [];
-                availableWishes = wishes;
-            }
+            const selectedTemplate = wishTemplates[Math.floor(Math.random() * wishTemplates.length)];
             
-            const selectedWish = availableWishes[Math.floor(Math.random() * availableWishes.length)];
-            usedWishes.push(selectedWish);
-            localStorage.setItem('usedWishes', JSON.stringify(usedWishes));
-            
-            return `<h4>Побажання Ленусіку!</h4><p>${selectedWish}</p>`;
+            return `<h4>Побажання Ленусіку!</h4><p>${selectedTemplate}</p>`;
         }
 
         function updateHistoryDisplay() {
