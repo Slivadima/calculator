@@ -47,6 +47,14 @@
             border-radius: 5px; 
             margin-bottom: 10px; 
         }
+        #wishesOfTheDay {
+            font-style: italic;
+            color: #1a5f7a;
+            margin-top: 15px;
+            padding: 10px;
+            background-color: #e6f7ff;
+            border-radius: 5px;
+        }
         @media (max-width: 480px) {
             body { 
                 padding: 10px; 
@@ -74,97 +82,125 @@
     <script>
         let history = JSON.parse(localStorage.getItem('calculationHistory')) || [];
 
-function calculate() {
-    let totalQuantity = Number(document.getElementById('totalQuantity').value);
-    let boxQuantity = Number(document.getElementById('boxQuantity').value);
-    let palleteBoxes = Number(document.getElementById('palleteBoxes').value);
+        function calculate() {
+            let totalQuantity = Number(document.getElementById('totalQuantity').value);
+            let boxQuantity = Number(document.getElementById('boxQuantity').value);
+            let palleteBoxes = Number(document.getElementById('palleteBoxes').value);
 
-    const results = document.getElementById('results');
-    results.innerHTML = '';
+            const results = document.getElementById('results');
+            results.innerHTML = '';
 
-    // Валідація: перевіряємо, щоб хоча б два поля були заповнені
-    const filledFields = [totalQuantity, boxQuantity, palleteBoxes].filter(value => value > 0).length;
-    if (filledFields < 2) {
-        results.innerHTML = '<p class="error">Будь ласка, заповніть принаймні два поля.</p>';
-        return;
-    }
+            // Валідація: перевіряємо, щоб хоча б два поля були заповнені
+            const filledFields = [totalQuantity, boxQuantity, palleteBoxes].filter(value => value > 0).length;
+            if (filledFields < 2) {
+                results.innerHTML = '<p class="error">Будь ласка, заповніть принаймні два поля.</p>';
+                return;
+            }
 
-    // Логіка розрахунку, якщо одне з полів пусте
-    if (isNaN(totalQuantity)) totalQuantity = boxQuantity * palleteBoxes;
-    else if (isNaN(boxQuantity)) boxQuantity = Math.ceil(totalQuantity / palleteBoxes);
-    else if (isNaN(palleteBoxes)) palleteBoxes = Math.ceil(totalQuantity / boxQuantity);
+            // Логіка розрахунку, якщо одне з полів пусте
+            if (isNaN(totalQuantity)) totalQuantity = boxQuantity * palleteBoxes;
+            else if (isNaN(boxQuantity)) boxQuantity = Math.ceil(totalQuantity / palleteBoxes);
+            else if (isNaN(palleteBoxes)) palleteBoxes = Math.ceil(totalQuantity / boxQuantity);
 
-    // Основні розрахунки
-    const totalBoxes = Math.ceil(totalQuantity / boxQuantity);
-    const fullPallets = Math.floor(totalBoxes / palleteBoxes);
-    const remainingBoxes = totalBoxes % palleteBoxes;
-    const lastBoxQuantity = totalQuantity % boxQuantity;
-    const quantityPerPallet = palleteBoxes * boxQuantity;
+            // Основні розрахунки
+            const totalBoxes = Math.ceil(totalQuantity / boxQuantity);
+            const fullPallets = Math.floor(totalBoxes / palleteBoxes);
+            const remainingBoxes = totalBoxes % palleteBoxes;
+            const lastBoxQuantity = totalQuantity % boxQuantity;
+            const quantityPerPallet = palleteBoxes * boxQuantity;
 
-    // Заміняємо NaN і Infinity на прочерк
-    const safeValue = (value) => (isNaN(value) || !isFinite(value)) ? '—' : value;
+            // Заміняємо NaN і Infinity на прочерк
+            const safeValue = (value) => (isNaN(value) || !isFinite(value)) ? '—' : value;
 
-    // Новий формат виводу
-    let resultString = '';
-    if (fullPallets > 0) {
-        resultString += `${safeValue(fullPallets)}п`;
-        if (remainingBoxes > 0 || lastBoxQuantity > 0) resultString += ' + ';
-    }
-    if (remainingBoxes > 0) {
-        resultString += `${safeValue(remainingBoxes)}ящ`;
-        if (lastBoxQuantity > 0) resultString += ' + ';
-    }
-    if (lastBoxQuantity > 0) {
-        resultString += `${safeValue(lastBoxQuantity)} шт`;
-    }
-    if (resultString === '') resultString = '0';
+            // Оновлений формат виводу з пробілами та об'єднанням повних ящиків
+            let resultString = '';
+            if (fullPallets > 0) {
+                resultString += `${safeValue(fullPallets)}п`;
+                if (remainingBoxes > 0) resultString += ' + ';
+            }
+            if (remainingBoxes > 0) {
+                if (lastBoxQuantity === 0) {
+                    // Якщо останній ящик повний, просто додаємо його до загальної кількості ящиків
+                    resultString += `${safeValue(remainingBoxes)}ящ`;
+                } else {
+                    // Якщо останній ящик неповний, вказуємо окремо
+                    if (remainingBoxes > 1) {
+                        resultString += `${safeValue(remainingBoxes - 1)}ящ + `;
+                    }
+                    resultString += `1ящ - ${safeValue(lastBoxQuantity)} шт`;
+                }
+            }
+            if (resultString === '') resultString = '0';
 
-    const resultHTML = `
-        <h3>Результат:</h3>
-        <p><strong>Розрахунок:</strong> ${resultString}</p>
-        <p><strong>Кількість продукції в палеті:</strong> ${safeValue(quantityPerPallet)} шт</p>
-        <p><strong>Усього ящиків:</strong> ${safeValue(totalBoxes)} шт</p>
-        <p><strong>Тираж:</strong> ${safeValue(totalQuantity)}, <strong>Кількість у ящику:</strong> ${safeValue(boxQuantity)}, <strong>Ящиків на палеті:</strong> ${safeValue(palleteBoxes)}</p>
-    `;
-
-    results.innerHTML = resultHTML;
-
-    // Додавання в історію
-    history.unshift({ totalQuantity, boxQuantity, palleteBoxes, results: resultHTML });
-    if (history.length > 10) history.pop();
-
-    // Збереження історії в localStorage
-    localStorage.setItem('calculationHistory', JSON.stringify(history));
-
-    updateHistoryDisplay();
-}
-
-function updateHistoryDisplay() {
-    const historyDiv = document.getElementById('history');
-    if (history.length > 0) {
-        historyDiv.innerHTML = `
-            <h3>Історія розрахунків:</h3>
-            ${history.map((item, index) => `
-                <div class="history-item">
-                    ${item.results.replace('<h3>Результат:</h3>', '')}
+            const resultHTML = `
+                <h3>Результат:</h3>
+                <p><strong>Розрахунок:</strong> ${resultString}</p>
+                <p><strong>Кількість продукції в палеті:</strong> ${safeValue(quantityPerPallet)} шт</p>
+                <p><strong>Усього ящиків:</strong> ${safeValue(totalBoxes)} шт</p>
+                <p><strong>Тираж:</strong> ${safeValue(totalQuantity)}, <strong>Кількість у ящику:</strong> ${safeValue(boxQuantity)}, <strong>Ящиків на палеті:</strong> ${safeValue(palleteBoxes)}</p>
+                <div id="wishesOfTheDay">
+                    ${generateWishesOfTheDay()}
                 </div>
-            `).join('')}
-        `;
-    } else {
-        historyDiv.innerHTML = '';
-    }
-}
+            `;
 
-function clearHistory() {
-    history = [];
-    localStorage.removeItem('calculationHistory');
-    updateHistoryDisplay();
-}
+            results.innerHTML = resultHTML;
 
-window.onload = function () {
-    updateHistoryDisplay();
-};
+            // Додавання в історію
+            history.unshift({ totalQuantity, boxQuantity, palleteBoxes, results: resultHTML });
+            if (history.length > 10) history.pop();
 
+            // Збереження історії в localStorage
+            localStorage.setItem('calculationHistory', JSON.stringify(history));
+
+            updateHistoryDisplay();
+        }
+
+        function generateWishesOfTheDay() {
+            const subjects = ["твої розрахунки", "твої проекти", "твої ідеї", "твої досягнення", "твої плани", "твої успіхи", "твої кроки", "твої рішення"];
+            const adjectives = ["точними", "успішними", "швидкими", "величними", "легкими", "вражаючими", "впевненими", "мудрими"];
+            const comparisons = ["як цей калькулятор", "як ці обчислення", "ніж цифри в цьому розрахунку", "як ці числа в калькуляторі", "як ці підрахунки", "як результати цих обчислень", "як ці розрахунки"];
+            
+            const randomSubject = subjects[Math.floor(Math.random() * subjects.length)];
+            const randomAdjective = adjectives[Math.floor(Math.random() * adjectives.length)];
+            const randomComparison = comparisons[Math.floor(Math.random() * comparisons.length)];
+            
+            const wishTemplates = [
+                `Нехай ${randomSubject} завжди будуть такими ж ${randomAdjective}, ${randomComparison}!`,
+                `Бажаю, щоб ${randomSubject} були ${randomAdjective}, як ${randomComparison}!`,
+                `Хай ${randomSubject} стають все більш ${randomAdjective}, ${randomComparison}!`,
+                `Нехай ${randomSubject} множаться та стають ${randomAdjective}, швидше ніж ${randomComparison}!`
+            ];
+            
+            const selectedTemplate = wishTemplates[Math.floor(Math.random() * wishTemplates.length)];
+            
+            return `<h4>Побажання Ленусіку!</h4><p>${selectedTemplate}</p>`;
+        }
+
+        function updateHistoryDisplay() {
+            const historyDiv = document.getElementById('history');
+            if (history.length > 0) {
+                historyDiv.innerHTML = `
+                    <h3>Історія розрахунків:</h3>
+                    ${history.map((item, index) => `
+                        <div class="history-item">
+                            ${item.results.replace('<h3>Результат:</h3>', '')}
+                        </div>
+                    `).join('')}
+                `;
+            } else {
+                historyDiv.innerHTML = '';
+            }
+        }
+
+        function clearHistory() {
+            history = [];
+            localStorage.removeItem('calculationHistory');
+            updateHistoryDisplay();
+        }
+
+        window.onload = function () {
+            updateHistoryDisplay();
+        };
     </script>
 </body>
 </html>
