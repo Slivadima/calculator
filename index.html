@@ -55,6 +55,15 @@
             background-color: #e6f7ff;
             border-radius: 5px;
         }
+        .debug-info {
+            font-family: monospace;
+            font-size: 12px;
+            color: #666;
+            margin-top: 10px;
+            padding: 10px;
+            background-color: #f8f8f8;
+            border-radius: 5px;
+        }
         @media (max-width: 480px) {
             body { 
                 padding: 10px; 
@@ -102,34 +111,38 @@
             else if (isNaN(boxQuantity)) boxQuantity = Math.ceil(totalQuantity / palleteBoxes);
             else if (isNaN(palleteBoxes)) palleteBoxes = Math.ceil(totalQuantity / boxQuantity);
 
-            // Основні розрахунки
-            const totalBoxes = Math.ceil(totalQuantity / boxQuantity);
-            const fullPallets = Math.floor(totalBoxes / palleteBoxes);
-            const remainingBoxes = totalBoxes % palleteBoxes;
-            const lastBoxQuantity = totalQuantity % boxQuantity;
+            // Оновлені розрахунки
+            const fullBoxes = Math.floor(totalQuantity / boxQuantity); // Кількість повних ящиків
+            const lastBoxQuantity = totalQuantity % boxQuantity; // Залишок в останньому ящику
+            const fullPallets = Math.floor(fullBoxes / palleteBoxes); // Кількість повних палет
+            const remainingBoxes = fullBoxes % palleteBoxes; // Залишок повних ящиків після палет
+            const totalBoxes = fullBoxes + (lastBoxQuantity > 0 ? 1 : 0); // Загальна кількість ящиків
             const quantityPerPallet = palleteBoxes * boxQuantity;
 
             // Заміняємо NaN і Infinity на прочерк
             const safeValue = (value) => (isNaN(value) || !isFinite(value)) ? '—' : value;
 
-            // Оновлений формат виводу з пробілами та об'єднанням повних ящиків
+            // Формування результату
             let resultString = '';
+            
+            // Додаємо повні палети
             if (fullPallets > 0) {
                 resultString += `${safeValue(fullPallets)}п`;
-                if (remainingBoxes > 0) resultString += ' + ';
+                if (remainingBoxes > 0 || lastBoxQuantity > 0) resultString += ' + ';
             }
+
+            // Додаємо повні ящики, що залишилися
             if (remainingBoxes > 0) {
-                if (lastBoxQuantity === 0) {
-                    // Якщо останній ящик повний, просто додаємо його до загальної кількості ящиків
-                    resultString += `${safeValue(remainingBoxes)}ящ`;
-                } else {
-                    // Якщо останній ящик неповний, вказуємо окремо
-                    if (remainingBoxes > 1) {
-                        resultString += `${safeValue(remainingBoxes - 1)}ящ + `;
-                    }
-                    resultString += `1ящ - ${safeValue(lastBoxQuantity)} шт`;
-                }
+                resultString += `${safeValue(remainingBoxes)}ящ`;
+                if (lastBoxQuantity > 0) resultString += ' + ';
             }
+
+            // Додаємо неповний ящик, якщо є
+            if (lastBoxQuantity > 0) {
+                resultString += `1ящ - ${safeValue(lastBoxQuantity)} шт`;
+            }
+
+            // Якщо нічого не додано, виводимо 0
             if (resultString === '') resultString = '0';
 
             const resultHTML = `
@@ -138,6 +151,13 @@
                 <p><strong>Кількість продукції в палеті:</strong> ${safeValue(quantityPerPallet)} шт</p>
                 <p><strong>Усього ящиків:</strong> ${safeValue(totalBoxes)} шт</p>
                 <p><strong>Тираж:</strong> ${safeValue(totalQuantity)}, <strong>Кількість у ящику:</strong> ${safeValue(boxQuantity)}, <strong>Ящиків на палеті:</strong> ${safeValue(palleteBoxes)}</p>
+                <div class="debug-info">
+                    Проміжні розрахунки:<br>
+                    Повних ящиків: ${fullBoxes}<br>
+                    Залишок в останньому: ${lastBoxQuantity}<br>
+                    Повних палет: ${fullPallets}<br>
+                    Залишок ящиків: ${remainingBoxes}
+                </div>
                 <div id="wishesOfTheDay">
                     ${generateWishesOfTheDay()}
                 </div>
