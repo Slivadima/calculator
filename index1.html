@@ -27,7 +27,7 @@
             background-color: #4CAF50; 
             color: white; 
             border: none; 
-            cursor: pointer; 
+            cursor: pointer;
         }
         button:active { background-color: #45a049; }
         #results, #history { 
@@ -48,16 +48,9 @@
             margin-bottom: 10px; 
         }
         @media (max-width: 480px) {
-            body { 
-                padding: 10px; 
-            }
-            input, button { 
-                font-size: 14px; 
-            }
-            #results, #history { 
-                font-size: 14px; 
-                padding: 10px; 
-            }
+            body { padding: 10px; }
+            input, button { font-size: 14px; }
+            #results, #history { font-size: 14px; padding: 10px; }
         }
     </style>
 </head>
@@ -72,102 +65,80 @@
     <button id="clearHistory" onclick="clearHistory()">Очистити історію</button>
 
     <script>
-        // Очищаємо стару історію, щоб прибрати старі побажання
-        localStorage.removeItem('calculationHistory');
-        let history = [];
+        let history = JSON.parse(localStorage.getItem('calculationHistory')) || [];
 
         function calculate() {
-            const totalQuantityInput = document.getElementById('totalQuantity');
-            const boxQuantityInput = document.getElementById('boxQuantity');
-            const palleteBoxesInput = document.getElementById('palleteBoxes');
-
-            let totalQuantity = Number(totalQuantityInput.value);
-            let boxQuantity = Number(boxQuantityInput.value);
-            let palleteBoxes = Number(palleteBoxesInput.value);
-
+            const totalQuantity = Number(document.getElementById('totalQuantity').value);
+            const boxQuantity = Number(document.getElementById('boxQuantity').value);
+            const palleteBoxes = Number(document.getElementById('palleteBoxes').value);
             const results = document.getElementById('results');
             results.innerHTML = '';
 
-            // Валідація: перевіряємо, щоб хоча б два поля були заповнені
-            const filledFields = [totalQuantity, boxQuantity, palleteBoxes].filter(value => value > 0).length;
-            if (filledFields < 2) {
+            // Валідація
+            const filled = [totalQuantity, boxQuantity, palleteBoxes].filter(v => v > 0).length;
+            if (filled < 2) {
                 results.innerHTML = '<p class="error">Будь ласка, заповніть принаймні два поля.</p>';
                 return;
             }
+            // Додавання якщо відсутні дані
+            let tQ = totalQuantity, bQ = boxQuantity, pB = palleteBoxes;
+            if (isNaN(tQ)) tQ = bQ * pB;
+            else if (isNaN(bQ)) bQ = Math.ceil(tQ / pB);
+            else if (isNaN(pB)) pB = Math.ceil(tQ / bQ);
 
-            // Логіка розрахунку, якщо одне з полів пусте
-            if (isNaN(totalQuantity)) totalQuantity = boxQuantity * palleteBoxes;
-            else if (isNaN(boxQuantity)) boxQuantity = Math.ceil(totalQuantity / palleteBoxes);
-            else if (isNaN(palleteBoxes)) palleteBoxes = Math.ceil(totalQuantity / boxQuantity);
+            // Основні розрахунки
+            const fullBoxes = Math.floor(tQ / bQ);
+            const lastQty = tQ % bQ;
+            const fullPallets = Math.floor(fullBoxes / pB);
+            const remBoxes = fullBoxes % pB;
+            const totalBoxes = fullBoxes + (lastQty > 0 ? 1 : 0);
+            const perPallet = pB * bQ;
 
-            // Розрахунки
-            const fullBoxes = Math.floor(totalQuantity / boxQuantity);
-            const lastBoxQuantity = totalQuantity % boxQuantity;
-            const fullPallets = Math.floor(fullBoxes / palleteBoxes);
-            const remainingBoxes = fullBoxes % palleteBoxes;
-            const totalBoxes = fullBoxes + (lastBoxQuantity > 0 ? 1 : 0);
-            const quantityPerPallet = palleteBoxes * boxQuantity;
-
-            const safeValue = (value) => (isNaN(value) || !isFinite(value)) ? '—' : value;
-
-            // Формування результату
-            let resultString = '';
-            if (fullPallets > 0) {
-                resultString += `${safeValue(fullPallets)}п`;
-                if (remainingBoxes > 0 || lastBoxQuantity > 0) resultString += ' + ';
+            // Формуємо рядок розрахунку
+            let calcParts = [];
+            if (fullPallets > 0) calcParts.push(`${fullPallets}п`);
+            if (remBoxes > 0) calcParts.push(`${remBoxes}ящ`);
+            if (lastQty > 0) {
+                const boxIndex = remBoxes + 1;
+                calcParts.push(`${lastQty}шт в ${boxIndex}ящику`);
             }
-            if (remainingBoxes > 0) {
-                resultString += `${safeValue(remainingBoxes)}ящ`;
-                if (lastBoxQuantity > 0) resultString += ' + ';
-            }
-            if (lastBoxQuantity > 0) {
-                resultString += `1ящ - ${safeValue(lastBoxQuantity)} шт`;
-            }
-            if (resultString === '') resultString = '0';
+            const calcString = calcParts.join(' + ');
 
-            const resultHTML = `
+            // Виводимо результат
+            const html = `
                 <h3>Результат:</h3>
-                <p><strong>Розрахунок:</strong> ${resultString}</p>
-                <p><strong>Кількість продукції в палеті:</strong> ${safeValue(quantityPerPallet)} шт</p>
-                <p><strong>Усього ящиків:</strong> ${safeValue(totalBoxes)} шт</p>
-                <p><strong>Тираж:</strong> ${safeValue(totalQuantity)}, <strong>Кількість у ящику:</strong> ${safeValue(boxQuantity)}, <strong>Ящиків на палеті:</strong> ${safeValue(palleteBoxes)}</p>
-                <div class="debug-info">
-                    Проміжні розрахунки:<br>
-                    Повних ящиків: ${fullBoxes}<br>
-                    Залишок в останньому: ${lastBoxQuantity}<br>
-                    Повних палет: ${fullPallets}<br>
-                    Залишок ящиків: ${remainingBoxes}
-                </div>
+                <p><strong>Розрахунок:</strong> ${calcString}</p>
+                <p><strong>Усього ящиків:</strong> ${totalBoxes} шт</p>
+                <p><strong>Повних палет:</strong> ${fullPallets}</p>
+                <p><strong>Залишок ящиків:</strong> ${remBoxes}</p>
+                <p><strong>Кількість продукції в палеті:</strong> ${perPallet} шт</p>
+                <p><strong>Тираж:</strong> ${tQ}, <strong>Кількість у ящику:</strong> ${bQ}, <strong>Ящиків на палеті:</strong> ${pB}</p>
             `;
 
-            results.innerHTML = resultHTML;
+            results.innerHTML = html;
 
-            history.unshift({ totalQuantity, boxQuantity, palleteBoxes, results: resultHTML });
+            // Історія
+            history.unshift({ html });
             if (history.length > 10) history.pop();
             localStorage.setItem('calculationHistory', JSON.stringify(history));
-
-            updateHistoryDisplay();
+            updateHistory();
         }
 
-        function updateHistoryDisplay() {
-            const historyDiv = document.getElementById('history');
-            if (history.length > 0) {
-                historyDiv.innerHTML = '<h3>Історія розрахунків:</h3>' +
-                    history.map(item => `<div class="history-item">${item.results.replace('<h3>Результат:</h3>', '')}</div>`).join('');
-            } else {
-                historyDiv.innerHTML = '';
-            }
+        function updateHistory() {
+            const div = document.getElementById('history');
+            if (history.length) {
+                div.innerHTML = '<h3>Історія розрахунків:</h3>' +
+                  history.map(h => `<div class="history-item">${h.html}</div>`).join('');
+            } else div.innerHTML = '';
         }
 
         function clearHistory() {
             history = [];
             localStorage.removeItem('calculationHistory');
-            updateHistoryDisplay();
+            updateHistory();
         }
 
-        window.onload = function () {
-            updateHistoryDisplay();
-        };
+        window.onload = updateHistory;
     </script>
 </body>
 </html>
