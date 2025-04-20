@@ -72,12 +72,18 @@
     <button id="clearHistory" onclick="clearHistory()">Очистити історію</button>
 
     <script>
-        let history = JSON.parse(localStorage.getItem('calculationHistory')) || [];
+        // Очищаємо стару історію, щоб прибрати старі побажання
+        localStorage.removeItem('calculationHistory');
+        let history = [];
 
         function calculate() {
-            let totalQuantity = Number(document.getElementById('totalQuantity').value);
-            let boxQuantity = Number(document.getElementById('boxQuantity').value);
-            let palleteBoxes = Number(document.getElementById('palleteBoxes').value);
+            const totalQuantityInput = document.getElementById('totalQuantity');
+            const boxQuantityInput = document.getElementById('boxQuantity');
+            const palleteBoxesInput = document.getElementById('palleteBoxes');
+
+            let totalQuantity = Number(totalQuantityInput.value);
+            let boxQuantity = Number(boxQuantityInput.value);
+            let palleteBoxes = Number(palleteBoxesInput.value);
 
             const results = document.getElementById('results');
             results.innerHTML = '';
@@ -94,38 +100,29 @@
             else if (isNaN(boxQuantity)) boxQuantity = Math.ceil(totalQuantity / palleteBoxes);
             else if (isNaN(palleteBoxes)) palleteBoxes = Math.ceil(totalQuantity / boxQuantity);
 
-            // Оновлені розрахунки
-            const fullBoxes = Math.floor(totalQuantity / boxQuantity); // Кількість повних ящиків
-            const lastBoxQuantity = totalQuantity % boxQuantity; // Залишок в останньому ящику
-            const fullPallets = Math.floor(fullBoxes / palleteBoxes); // Кількість повних палет
-            const remainingBoxes = fullBoxes % palleteBoxes; // Залишок повних ящиків після палет
-            const totalBoxes = fullBoxes + (lastBoxQuantity > 0 ? 1 : 0); // Загальна кількість ящиків
+            // Розрахунки
+            const fullBoxes = Math.floor(totalQuantity / boxQuantity);
+            const lastBoxQuantity = totalQuantity % boxQuantity;
+            const fullPallets = Math.floor(fullBoxes / palleteBoxes);
+            const remainingBoxes = fullBoxes % palleteBoxes;
+            const totalBoxes = fullBoxes + (lastBoxQuantity > 0 ? 1 : 0);
             const quantityPerPallet = palleteBoxes * boxQuantity;
 
-            // Заміняємо NaN і Infinity на прочерк
             const safeValue = (value) => (isNaN(value) || !isFinite(value)) ? '—' : value;
 
             // Формування результату
             let resultString = '';
-            
-            // Додаємо повні палети
             if (fullPallets > 0) {
                 resultString += `${safeValue(fullPallets)}п`;
                 if (remainingBoxes > 0 || lastBoxQuantity > 0) resultString += ' + ';
             }
-
-            // Додаємо повні ящики, що залишилися
             if (remainingBoxes > 0) {
                 resultString += `${safeValue(remainingBoxes)}ящ`;
                 if (lastBoxQuantity > 0) resultString += ' + ';
             }
-
-            // Додаємо неповний ящик, якщо є
             if (lastBoxQuantity > 0) {
                 resultString += `1ящ - ${safeValue(lastBoxQuantity)} шт`;
             }
-
-            // Якщо нічого не додано, виводимо 0
             if (resultString === '') resultString = '0';
 
             const resultHTML = `
@@ -145,11 +142,8 @@
 
             results.innerHTML = resultHTML;
 
-            // Додавання в історію
             history.unshift({ totalQuantity, boxQuantity, palleteBoxes, results: resultHTML });
             if (history.length > 10) history.pop();
-
-            // Збереження історії в localStorage
             localStorage.setItem('calculationHistory', JSON.stringify(history));
 
             updateHistoryDisplay();
@@ -158,14 +152,8 @@
         function updateHistoryDisplay() {
             const historyDiv = document.getElementById('history');
             if (history.length > 0) {
-                historyDiv.innerHTML = `
-                    <h3>Історія розрахунків:</h3>
-                    ${history.map((item, index) => `
-                        <div class="history-item">
-                            ${item.results.replace('<h3>Результат:</h3>', '')}
-                        </div>
-                    `).join('')}
-                `;
+                historyDiv.innerHTML = '<h3>Історія розрахунків:</h3>' +
+                    history.map(item => `<div class="history-item">${item.results.replace('<h3>Результат:</h3>', '')}</div>`).join('');
             } else {
                 historyDiv.innerHTML = '';
             }
