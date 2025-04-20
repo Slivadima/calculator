@@ -97,8 +97,8 @@
             if (fullPallets > 0) calcParts.push(`${fullPallets}п`);
             if (remFullBoxes > 0) calcParts.push(`${remFullBoxes}ящ`);
             if (lastQty > 0) {
-                const boxIndex = remFullBoxes + 1;
-                calcParts.push(`${lastQty}шт в ${boxIndex}ящику`);
+                // Виводимо лише кількість штук у неповному ящику без вказання номера ящика
+                calcParts.push(`${lastQty} шт`);
             }
             const calcString = calcParts.join(' + ');
 
