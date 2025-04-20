@@ -68,35 +68,31 @@
         let history = JSON.parse(localStorage.getItem('calculationHistory')) || [];
 
         function calculate() {
-            const totalQuantity = Number(document.getElementById('totalQuantity').value);
-            const boxQuantity = Number(document.getElementById('boxQuantity').value);
-            const palleteBoxes = Number(document.getElementById('palleteBoxes').value);
+            const tQ = Number(document.getElementById('totalQuantity').value);
+            const bQ = Number(document.getElementById('boxQuantity').value);
+            const pB = Number(document.getElementById('palleteBoxes').value);
             const results = document.getElementById('results');
             results.innerHTML = '';
 
-            // Валідація
-            const filled = [totalQuantity, boxQuantity, palleteBoxes].filter(v => v > 0).length;
+            const filled = [tQ, bQ, pB].filter(v => v > 0).length;
             if (filled < 2) {
                 results.innerHTML = '<p class="error">Будь ласка, заповніть принаймні два поля.</p>';
                 return;
             }
-            // Обчислення відсутнього параметру
-            let tQ = totalQuantity, bQ = boxQuantity, pB = palleteBoxes;
-            if (isNaN(tQ)) tQ = bQ * pB;
-            else if (isNaN(bQ)) bQ = Math.ceil(tQ / pB);
-            else if (isNaN(pB)) pB = Math.ceil(tQ / bQ);
+            let totalQuantity = tQ, boxQuantity = bQ, palleteBoxes = pB;
+            if (isNaN(totalQuantity)) totalQuantity = boxQuantity * palleteBoxes;
+            else if (isNaN(boxQuantity)) boxQuantity = Math.ceil(totalQuantity / palleteBoxes);
+            else if (isNaN(palleteBoxes)) palleteBoxes = Math.ceil(totalQuantity / boxQuantity);
 
-            // Основні розрахунки
-            const fullBoxes = Math.floor(tQ / bQ);
-            const lastQty = tQ % bQ;
-            const fullPallets = Math.floor(fullBoxes / pB);
-            const remFullBoxes = fullBoxes % pB;
+            const fullBoxes = Math.floor(totalQuantity / boxQuantity);
+            const lastQty = totalQuantity % boxQuantity;
+            const fullPallets = Math.floor(fullBoxes / palleteBoxes);
+            const remFullBoxes = fullBoxes % palleteBoxes;
             const hasPartial = lastQty > 0 ? 1 : 0;
             const remBoxesTotal = remFullBoxes + hasPartial;
             const totalBoxes = fullBoxes + hasPartial;
-            const perPallet = pB * bQ;
+            const perPallet = palleteBoxes * boxQuantity;
 
-            // Формуємо рядок розрахунку
             let calcParts = [];
             if (fullPallets > 0) calcParts.push(`${fullPallets}п`);
             if (remFullBoxes > 0) calcParts.push(`${remFullBoxes}ящ`);
@@ -106,20 +102,18 @@
             }
             const calcString = calcParts.join(' + ');
 
-            // Виводимо результат
             const html = `
                 <h3>Результат:</h3>
                 <p><strong>Розрахунок:</strong> ${calcString}</p>
+                <p><strong>Залишок ящиків:</strong> ${remBoxesTotal}</p>
                 <p><strong>Усього ящиків:</strong> ${totalBoxes} шт</p>
                 <p><strong>Повних палет:</strong> ${fullPallets}</p>
-                <p><strong>Залишок ящиків:</strong> ${remBoxesTotal}</p>
                 <p><strong>Кількість продукції в палеті:</strong> ${perPallet} шт</p>
-                <p><strong>Тираж:</strong> ${tQ}, <strong>Кількість у ящику:</strong> ${bQ}, <strong>Ящиків на палеті:</strong> ${pB}</p>
+                <p><strong>Тираж:</strong> ${totalQuantity}, <strong>Кількість у ящику:</strong> ${boxQuantity}, <strong>Ящиків на палеті:</strong> ${palleteBoxes}</p>
             `;
 
             results.innerHTML = html;
 
-            // Зберігаємо в історію
             history.unshift({ html });
             if (history.length > 10) history.pop();
             localStorage.setItem('calculationHistory', JSON.stringify(history));
