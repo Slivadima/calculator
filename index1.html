@@ -80,7 +80,7 @@
                 results.innerHTML = '<p class="error">Будь ласка, заповніть принаймні два поля.</p>';
                 return;
             }
-            // Додавання якщо відсутні дані
+            // Обчислення відсутнього параметру
             let tQ = totalQuantity, bQ = boxQuantity, pB = palleteBoxes;
             if (isNaN(tQ)) tQ = bQ * pB;
             else if (isNaN(bQ)) bQ = Math.ceil(tQ / pB);
@@ -90,16 +90,18 @@
             const fullBoxes = Math.floor(tQ / bQ);
             const lastQty = tQ % bQ;
             const fullPallets = Math.floor(fullBoxes / pB);
-            const remBoxes = fullBoxes % pB;
-            const totalBoxes = fullBoxes + (lastQty > 0 ? 1 : 0);
+            const remFullBoxes = fullBoxes % pB;
+            const hasPartial = lastQty > 0 ? 1 : 0;
+            const remBoxesTotal = remFullBoxes + hasPartial;
+            const totalBoxes = fullBoxes + hasPartial;
             const perPallet = pB * bQ;
 
             // Формуємо рядок розрахунку
             let calcParts = [];
             if (fullPallets > 0) calcParts.push(`${fullPallets}п`);
-            if (remBoxes > 0) calcParts.push(`${remBoxes}ящ`);
+            if (remFullBoxes > 0) calcParts.push(`${remFullBoxes}ящ`);
             if (lastQty > 0) {
-                const boxIndex = remBoxes + 1;
+                const boxIndex = remFullBoxes + 1;
                 calcParts.push(`${lastQty}шт в ${boxIndex}ящику`);
             }
             const calcString = calcParts.join(' + ');
@@ -110,14 +112,14 @@
                 <p><strong>Розрахунок:</strong> ${calcString}</p>
                 <p><strong>Усього ящиків:</strong> ${totalBoxes} шт</p>
                 <p><strong>Повних палет:</strong> ${fullPallets}</p>
-                <p><strong>Залишок ящиків:</strong> ${remBoxes}</p>
+                <p><strong>Залишок ящиків:</strong> ${remBoxesTotal}</p>
                 <p><strong>Кількість продукції в палеті:</strong> ${perPallet} шт</p>
                 <p><strong>Тираж:</strong> ${tQ}, <strong>Кількість у ящику:</strong> ${bQ}, <strong>Ящиків на палеті:</strong> ${pB}</p>
             `;
 
             results.innerHTML = html;
 
-            // Історія
+            // Зберігаємо в історію
             history.unshift({ html });
             if (history.length > 10) history.pop();
             localStorage.setItem('calculationHistory', JSON.stringify(history));
