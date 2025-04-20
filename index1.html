@@ -1,226 +1,49 @@
 <!DOCTYPE html>
-<html lang="uk">
+<html>
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Калькулятор палет і ящиків</title>
-    <style>
-        body { 
-            font-family: Arial, sans-serif; 
-            max-width: 600px; 
-            margin: 0 auto; 
-            padding: 20px; 
-            box-sizing: border-box;
-        }
-        input { 
-            width: 100%; 
-            padding: 10px; 
-            font-size: 16px; 
-            margin-bottom: 10px; 
-            box-sizing: border-box;
-        }
-        button { 
-            width: 100%; 
-            padding: 10px; 
-            font-size: 16px; 
-            margin-bottom: 10px; 
-            background-color: #4CAF50; 
-            color: white; 
-            border: none; 
-            cursor: pointer; 
-        }
-        button:active { background-color: #45a049; }
-        #results, #history { 
-            background-color: #f0f0f0; 
-            padding: 15px; 
-            border-radius: 5px; 
-            font-size: 16px; 
-            margin-bottom: 20px; 
-            word-wrap: break-word;
-        }
-        .error { color: red; }
-        #clearHistory { background-color: #f44336; }
-        #clearHistory:active { background-color: #d32f2f; }
-        .history-item { 
-            background-color: #ffffff; 
-            padding: 10px; 
-            border-radius: 5px; 
-            margin-bottom: 10px; 
-        }
-        #wishesOfTheDay {
-            font-style: italic;
-            color: #1a5f7a;
-            margin-top: 15px;
-            padding: 10px;
-            background-color: #e6f7ff;
-            border-radius: 5px;
-        }
-        .debug-info {
-            font-family: monospace;
-            font-size: 12px;
-            color: #666;
-            margin-top: 10px;
-            padding: 10px;
-            background-color: #f8f8f8;
-            border-radius: 5px;
-        }
-        @media (max-width: 480px) {
-            body { 
-                padding: 10px; 
-            }
-            input, button { 
-                font-size: 14px; 
-            }
-            #results, #history { 
-                font-size: 14px; 
-                padding: 10px; 
-            }
-        }
-    </style>
+    <title>A Simple Calculator</title>
+    <link rel="stylesheet" href="css/custom.css">
 </head>
 <body>
-    <h2>Калькулятор палет і ящиків</h2>
-    <input type="number" id="totalQuantity" placeholder="Тираж">
-    <input type="number" id="boxQuantity" placeholder="Кількість у ящику">
-    <input type="number" id="palleteBoxes" placeholder="Ящиків на палеті">
-    <button onclick="calculate()">Розрахувати</button>
-    <div id="results"></div>
-    <div id="history"></div>
-    <button id="clearHistory" onclick="clearHistory()">Очистити історію</button>
-
-    <script>
-        let history = JSON.parse(localStorage.getItem('calculationHistory')) || [];
-
-        function calculate() {
-            let totalQuantity = Number(document.getElementById('totalQuantity').value);
-            let boxQuantity = Number(document.getElementById('boxQuantity').value);
-            let palleteBoxes = Number(document.getElementById('palleteBoxes').value);
-
-            const results = document.getElementById('results');
-            results.innerHTML = '';
-
-            // Валідація: перевіряємо, щоб хоча б два поля були заповнені
-            const filledFields = [totalQuantity, boxQuantity, palleteBoxes].filter(value => value > 0).length;
-            if (filledFields < 2) {
-                results.innerHTML = '<p class="error">Будь ласка, заповніть принаймні два поля.</p>';
-                return;
-            }
-
-            // Логіка розрахунку, якщо одне з полів пусте
-            if (isNaN(totalQuantity)) totalQuantity = boxQuantity * palleteBoxes;
-            else if (isNaN(boxQuantity)) boxQuantity = Math.ceil(totalQuantity / palleteBoxes);
-            else if (isNaN(palleteBoxes)) palleteBoxes = Math.ceil(totalQuantity / boxQuantity);
-
-            // Оновлені розрахунки
-            const fullBoxes = Math.floor(totalQuantity / boxQuantity); // Кількість повних ящиків
-            const lastBoxQuantity = totalQuantity % boxQuantity; // Залишок в останньому ящику
-            const fullPallets = Math.floor(fullBoxes / palleteBoxes); // Кількість повних палет
-            const remainingBoxes = fullBoxes % palleteBoxes; // Залишок повних ящиків після палет
-            const totalBoxes = fullBoxes + (lastBoxQuantity > 0 ? 1 : 0); // Загальна кількість ящиків
-            const quantityPerPallet = palleteBoxes * boxQuantity;
-
-            // Заміняємо NaN і Infinity на прочерк
-            const safeValue = (value) => (isNaN(value) || !isFinite(value)) ? '—' : value;
-
-            // Формування результату
-            let resultString = '';
-            
-            // Додаємо повні палети
-            if (fullPallets > 0) {
-                resultString += `${safeValue(fullPallets)}п`;
-                if (remainingBoxes > 0 || lastBoxQuantity > 0) resultString += ' + ';
-            }
-
-            // Додаємо повні ящики, що залишилися
-            if (remainingBoxes > 0) {
-                resultString += `${safeValue(remainingBoxes)}ящ`;
-                if (lastBoxQuantity > 0) resultString += ' + ';
-            }
-
-            // Додаємо неповний ящик, якщо є
-            if (lastBoxQuantity > 0) {
-                resultString += `1ящ - ${safeValue(lastBoxQuantity)} шт`;
-            }
-
-            // Якщо нічого не додано, виводимо 0
-            if (resultString === '') resultString = '0';
-
-            const resultHTML = `
-                <h3>Результат:</h3>
-                <p><strong>Розрахунок:</strong> ${resultString}</p>
-                <p><strong>Кількість продукції в палеті:</strong> ${safeValue(quantityPerPallet)} шт</p>
-                <p><strong>Усього ящиків:</strong> ${safeValue(totalBoxes)} шт</p>
-                <p><strong>Тираж:</strong> ${safeValue(totalQuantity)}, <strong>Кількість у ящику:</strong> ${safeValue(boxQuantity)}, <strong>Ящиків на палеті:</strong> ${safeValue(palleteBoxes)}</p>
-                <div class="debug-info">
-                    Проміжні розрахунки:<br>
-                    Повних ящиків: ${fullBoxes}<br>
-                    Залишок в останньому: ${lastBoxQuantity}<br>
-                    Повних палет: ${fullPallets}<br>
-                    Залишок ящиків: ${remainingBoxes}
-                </div>
-                <div id="wishesOfTheDay">
-                    ${generateWishesOfTheDay()}
-                </div>
-            `;
-
-            results.innerHTML = resultHTML;
-
-            // Додавання в історію
-            history.unshift({ totalQuantity, boxQuantity, palleteBoxes, results: resultHTML });
-            if (history.length > 10) history.pop();
-
-            // Збереження історії в localStorage
-            localStorage.setItem('calculationHistory', JSON.stringify(history));
-
-            updateHistoryDisplay();
-        }
-
-        function generateWishesOfTheDay() {
-            const subjects = ["твої розрахунки", "твої проекти", "твої ідеї", "твої досягнення", "твої плани", "твої успіхи", "твої кроки", "твої рішення"];
-            const adjectives = ["точними", "успішними", "швидкими", "величними", "легкими", "вражаючими", "впевненими", "мудрими"];
-            const comparisons = ["як цей калькулятор", "як ці обчислення", "ніж цифри в цьому розрахунку", "як ці числа в калькуляторі", "як ці підрахунки", "як результати цих обчислень", "як ці розрахунки"];
-            
-            const randomSubject = subjects[Math.floor(Math.random() * subjects.length)];
-            const randomAdjective = adjectives[Math.floor(Math.random() * adjectives.length)];
-            const randomComparison = comparisons[Math.floor(Math.random() * comparisons.length)];
-            
-            const wishTemplates = [
-                `Нехай ${randomSubject} завжди будуть такими ж ${randomAdjective}, ${randomComparison}!`,
-                `Бажаю, щоб ${randomSubject} були ${randomAdjective}, як ${randomComparison}!`,
-                `Хай ${randomSubject} стають все більш ${randomAdjective}, ${randomComparison}!`,
-                `Нехай ${randomSubject} множаться та стають ${randomAdjective}, швидше ніж ${randomComparison}!`
-            ];
-            
-            const selectedTemplate = wishTemplates[Math.floor(Math.random() * wishTemplates.length)];
-            
-            return `<h4>Побажання Ленусіку!</h4><p>${selectedTemplate}</p>`;
-        }
-
-        function updateHistoryDisplay() {
-            const historyDiv = document.getElementById('history');
-            if (history.length > 0) {
-                historyDiv.innerHTML = `
-                    <h3>Історія розрахунків:</h3>
-                    ${history.map((item, index) => `
-                        <div class="history-item">
-                            ${item.results.replace('<h3>Результат:</h3>', '')}
-                        </div>
-                    `).join('')}
-                `;
-            } else {
-                historyDiv.innerHTML = '';
-            }
-        }
-
-        function clearHistory() {
-            history = [];
-            localStorage.removeItem('calculationHistory');
-            updateHistoryDisplay();
-        }
-
-        window.onload = function () {
-            updateHistoryDisplay();
-        };
-    </script>
+<div id="calculator" align="center">
+    <div>
+        <input id="screen" value="0"><br>
+    </div>
+    <div>
+        <button onclick="processNumberButton(this.innerHTML)">1</button>
+        <button onclick="processNumberButton(this.innerHTML)">2</button>
+        <button onclick="processNumberButton(this.innerHTML)">3</button>
+        <button onclick="processOperatorButton(this.innerHTML)" class="operator">+</button>
+    </div>
+    <div>
+        <button onclick="processNumberButton(this.innerHTML)">4</button>
+        <button onclick="processNumberButton(this.innerHTML)">5</button>
+        <button onclick="processNumberButton(this.innerHTML)">6</button>
+        <button onclick="processOperatorButton(this.innerHTML)" class="operator">-</button>
+    </div>
+    <div>
+        <button onclick="processNumberButton(this.innerHTML)">7</button>
+        <button onclick="processNumberButton(this.innerHTML)">8</button>
+        <button onclick="processNumberButton(this.innerHTML)">9</button>
+        <button onclick="processOperatorButton(this.innerHTML)" class="operator">/</button>
+    </div>
+    <div>
+        <button onclick="processNumberButton(this.innerHTML)">0</button>
+        <button onclick="processDecimalButton(this.innerHTML)">.</button>
+        <button onclick="processPercentageButton(this.innerHTML)">%</button>
+        <button onclick="processOperatorButton(this.innerHTML)" class="operator">x</button>
+    </div>
+    <div>
+        <button onclick="processNumberButton(this.innerHTML)">00</button>
+        <button onclick="processParenthesesButton(this.innerHTML)">(</button>
+        <button onclick="processParenthesesButton(this.innerHTML)">)</button>
+        <button onclick="processOperatorButton(this.innerHTML)" class="operator">^</button>
+    </div>
+    <div>
+        <button onclick="processResetButton()" class="reset">C</button>
+        <button onclick="processEqualsButton()" class="eval">=</button>
+    </div>
+</div>
+<script src="js/simplecalculator.js"></script>
 </body>
 </html>
