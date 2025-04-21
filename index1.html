@@ -5,53 +5,16 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Калькулятор палет і ящиків</title>
     <style>
-        body { 
-            font-family: Arial, sans-serif; 
-            max-width: 600px; 
-            margin: 0 auto; 
-            padding: 20px; 
-            box-sizing: border-box;
-        }
-        input { 
-            width: 100%; 
-            padding: 10px; 
-            font-size: 16px; 
-            margin-bottom: 10px; 
-            box-sizing: border-box;
-        }
-        button { 
-            width: 100%; 
-            padding: 10px; 
-            font-size: 16px; 
-            margin-bottom: 10px; 
-            background-color: #4CAF50; 
-            color: white; 
-            border: none; 
-            cursor: pointer;
-        }
+        body { font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px; box-sizing: border-box; }
+        input { width: 100%; padding: 10px; font-size: 16px; margin-bottom: 10px; box-sizing: border-box; }
+        button { width: 100%; padding: 10px; font-size: 16px; margin-bottom: 10px; background-color: #4CAF50; color: white; border: none; cursor: pointer; }
         button:active { background-color: #45a049; }
-        #results, #history { 
-            background-color: #f0f0f0; 
-            padding: 15px; 
-            border-radius: 5px; 
-            font-size: 16px; 
-            margin-bottom: 20px; 
-            word-wrap: break-word;
-        }
+        #results, #history { background-color: #f0f0f0; padding: 15px; border-radius: 5px; font-size: 16px; margin-bottom: 20px; word-wrap: break-word; }
         .error { color: red; }
         #clearHistory { background-color: #f44336; }
         #clearHistory:active { background-color: #d32f2f; }
-        .history-item { 
-            background-color: #ffffff; 
-            padding: 10px; 
-            border-radius: 5px; 
-            margin-bottom: 10px; 
-        }
-        @media (max-width: 480px) {
-            body { padding: 10px; }
-            input, button { font-size: 14px; }
-            #results, #history { font-size: 14px; padding: 10px; }
-        }
+        .history-item { background-color: #ffffff; padding: 10px; border-radius: 5px; margin-bottom: 10px; }
+        @media (max-width: 480px) { body { padding: 10px; } input, button { font-size: 14px; } #results, #history { font-size: 14px; padding: 10px; } }
     </style>
 </head>
 <body>
@@ -68,22 +31,32 @@
         let history = JSON.parse(localStorage.getItem('calculationHistory')) || [];
 
         function calculate() {
-            const tQ = Number(document.getElementById('totalQuantity').value);
-            const bQ = Number(document.getElementById('boxQuantity').value);
-            const pB = Number(document.getElementById('palleteBoxes').value);
+            // Читання сирих значень
+            const tqRaw = document.getElementById('totalQuantity').value.trim();
+            const bqRaw = document.getElementById('boxQuantity').value.trim();
+            const pbRaw = document.getElementById('palleteBoxes').value.trim();
+            
+            // Перетворення: якщо порожній рядок – ставимо NaN
+            let totalQuantity = tqRaw === '' ? NaN : Number(tqRaw);
+            let boxQuantity = bqRaw === '' ? NaN : Number(bqRaw);
+            let palleteBoxes = pbRaw === '' ? NaN : Number(pbRaw);
+
             const results = document.getElementById('results');
             results.innerHTML = '';
 
-            const filled = [tQ, bQ, pB].filter(v => v > 0).length;
+            // Валідація: потрібно заповнити хоча б два поля
+            const filled = [totalQuantity, boxQuantity, palleteBoxes].filter(v => !isNaN(v)).length;
             if (filled < 2) {
                 results.innerHTML = '<p class="error">Будь ласка, заповніть принаймні два поля.</p>';
                 return;
             }
-            let totalQuantity = tQ, boxQuantity = bQ, palleteBoxes = pB;
+
+            // Обчислення відсутнього параметру
             if (isNaN(totalQuantity)) totalQuantity = boxQuantity * palleteBoxes;
             else if (isNaN(boxQuantity)) boxQuantity = Math.ceil(totalQuantity / palleteBoxes);
             else if (isNaN(palleteBoxes)) palleteBoxes = Math.ceil(totalQuantity / boxQuantity);
 
+            // Основні розрахунки
             const fullBoxes = Math.floor(totalQuantity / boxQuantity);
             const lastQty = totalQuantity % boxQuantity;
             const fullPallets = Math.floor(fullBoxes / palleteBoxes);
@@ -93,15 +66,14 @@
             const totalBoxes = fullBoxes + hasPartial;
             const perPallet = palleteBoxes * boxQuantity;
 
-            let calcParts = [];
-            if (fullPallets > 0) calcParts.push(`${fullPallets}п`);
-            if (remFullBoxes > 0) calcParts.push(`${remFullBoxes}ящ`);
-            if (lastQty > 0) {
-                // Виводимо лише кількість штук у неповному ящику без вказання номера ящика
-                calcParts.push(`${lastQty} шт`);
-            }
-            const calcString = calcParts.join(' + ');
+            // Формування рядка "Розрахунок"
+            const parts = [];
+            if (fullPallets > 0) parts.push(`${fullPallets}п`);
+            if (remFullBoxes > 0) parts.push(`${remFullBoxes}ящ`);
+            if (lastQty > 0) parts.push(`${lastQty} шт`);
+            const calcString = parts.join(' + ');
 
+            // Відображення результатів
             const html = `
                 <h3>Результат:</h3>
                 <p><strong>Розрахунок:</strong> ${calcString}</p>
@@ -114,8 +86,8 @@
 
             results.innerHTML = html;
 
-            history.unshift({ html });
-            if (history.length > 10) history.pop();
+            // Збереження в історію
+            history.unshift({ html }); if (history.length > 10) history.pop();
             localStorage.setItem('calculationHistory', JSON.stringify(history));
             updateHistory();
         }
@@ -123,8 +95,7 @@
         function updateHistory() {
             const div = document.getElementById('history');
             if (history.length) {
-                div.innerHTML = '<h3>Історія розрахунків:</h3>' +
-                  history.map(h => `<div class="history-item">${h.html}</div>`).join('');
+                div.innerHTML = '<h3>Історія розрахунків:</h3>' + history.map(h => `<div class="history-item">${h.html}</div>`).join('');
             } else div.innerHTML = '';
         }
 
