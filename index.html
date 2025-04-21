@@ -5,53 +5,16 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Калькулятор палет і ящиків</title>
     <style>
-        body { 
-            font-family: Arial, sans-serif; 
-            max-width: 600px; 
-            margin: 0 auto; 
-            padding: 20px; 
-            box-sizing: border-box;
-        }
-        input { 
-            width: 100%; 
-            padding: 10px; 
-            font-size: 16px; 
-            margin-bottom: 10px; 
-            box-sizing: border-box;
-        }
-        button { 
-            width: 100%; 
-            padding: 10px; 
-            font-size: 16px; 
-            margin-bottom: 10px; 
-            background-color: #4CAF50; 
-            color: white; 
-            border: none; 
-            cursor: pointer;
-        }
+        body { font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px; box-sizing: border-box; }
+        input { width: 100%; padding: 10px; font-size: 16px; margin-bottom: 10px; box-sizing: border-box; }
+        button { width: 100%; padding: 10px; font-size: 16px; margin-bottom: 10px; background-color: #4CAF50; color: white; border: none; cursor: pointer; }
         button:active { background-color: #45a049; }
-        #results, #history { 
-            background-color: #f0f0f0; 
-            padding: 15px; 
-            border-radius: 5px; 
-            font-size: 16px; 
-            margin-bottom: 20px; 
-            word-wrap: break-word;
-        }
+        #results, #history { background-color: #f0f0f0; padding: 15px; border-radius: 5px; font-size: 16px; margin-bottom: 20px; word-wrap: break-word; }
         .error { color: red; }
         #clearHistory { background-color: #f44336; }
         #clearHistory:active { background-color: #d32f2f; }
-        .history-item { 
-            background-color: #ffffff; 
-            padding: 10px; 
-            border-radius: 5px; 
-            margin-bottom: 10px; 
-        }
-        @media (max-width: 480px) {
-            body { padding: 10px; }
-            input, button { font-size: 14px; }
-            #results, #history { font-size: 14px; padding: 10px; }
-        }
+        .history-item { background-color: #ffffff; padding: 10px; border-radius: 5px; margin-bottom: 10px; }
+        @media (max-width: 480px) { body { padding: 10px; } input, button { font-size: 14px; } #results, #history { font-size: 14px; padding: 10px; }}
     </style>
 </head>
 <body>
@@ -68,40 +31,59 @@
         let history = JSON.parse(localStorage.getItem('calculationHistory')) || [];
 
         function calculate() {
-            const tQ = Number(document.getElementById('totalQuantity').value);
-            const bQ = Number(document.getElementById('boxQuantity').value);
-            const pB = Number(document.getElementById('palleteBoxes').value);
+            const tQraw = document.getElementById('totalQuantity').value.trim();
+            const bQraw = document.getElementById('boxQuantity').value.trim();
+            const pBraw = document.getElementById('palleteBoxes').value.trim();
             const results = document.getElementById('results');
             results.innerHTML = '';
 
-            const filled = [tQ, bQ, pB].filter(v => v > 0).length;
+            // Перевірка заповнення полів
+            const filled = [tQraw, bQraw, pBraw].filter(v => v !== '').length;
             if (filled < 2) {
                 results.innerHTML = '<p class="error">Будь ласка, заповніть принаймні два поля.</p>';
                 return;
             }
-            let totalQuantity = tQ, boxQuantity = bQ, palleteBoxes = pB;
-            if (isNaN(totalQuantity)) totalQuantity = boxQuantity * palleteBoxes;
-            else if (isNaN(boxQuantity)) boxQuantity = Math.ceil(totalQuantity / palleteBoxes);
-            else if (isNaN(palleteBoxes)) palleteBoxes = Math.ceil(totalQuantity / boxQuantity);
 
+            // Парсимо значення
+            let totalQuantity = Number(tQraw);
+            let boxQuantity = Number(bQraw);
+            let palleteBoxes = Number(pBraw);
+            const isPBEmpty = (pBraw === '');
+
+            // Обчислення відсутніх параметрів
+            if (tQraw === '') totalQuantity = boxQuantity * palleteBoxes;
+            if (bQraw === '') boxQuantity = Math.ceil(totalQuantity / (palleteBoxes || 1));
+            if (isPBEmpty) palleteBoxes = 0;
+
+            // Розрахунки
             const fullBoxes = Math.floor(totalQuantity / boxQuantity);
             const lastQty = totalQuantity % boxQuantity;
-            const fullPallets = Math.floor(fullBoxes / palleteBoxes);
-            const remFullBoxes = fullBoxes % palleteBoxes;
-            const hasPartial = lastQty > 0 ? 1 : 0;
-            const remBoxesTotal = remFullBoxes + hasPartial;
-            const totalBoxes = fullBoxes + hasPartial;
-            const perPallet = palleteBoxes * boxQuantity;
+            const totalBoxes = fullBoxes + (lastQty > 0 ? 1 : 0);
 
-            let calcParts = [];
-            if (fullPallets > 0) calcParts.push(`${fullPallets}п`);
-            if (remFullBoxes > 0) calcParts.push(`${remFullBoxes}ящ`);
-            if (lastQty > 0) {
-                // Виводимо лише кількість штук у неповному ящику без вказання номера ящика
-                calcParts.push(`${lastQty} шт`);
+            let fullPallets = 0, remBoxesTotal = 0, perPallet = 0;
+            if (isPBEmpty) {
+                remBoxesTotal = totalBoxes;
+            } else {
+                fullPallets = Math.floor(fullBoxes / palleteBoxes);
+                const remFullBoxes = fullBoxes % palleteBoxes;
+                const hasPartial = lastQty > 0 ? 1 : 0;
+                remBoxesTotal = remFullBoxes + hasPartial;
+                perPallet = palleteBoxes * boxQuantity;
             }
-            const calcString = calcParts.join(' + ');
 
+            // Формування рядка розрахунку
+            const calcParts = [];
+            if (isPBEmpty) {
+                if (fullBoxes > 0) calcParts.push(`${fullBoxes}ящ`);
+            } else {
+                if (fullPallets > 0) calcParts.push(`${fullPallets}п`);
+                const remFullBoxes = fullBoxes % palleteBoxes;
+                if (remFullBoxes > 0) calcParts.push(`${remFullBoxes}ящ`);
+            }
+            if (lastQty > 0) calcParts.push(`${lastQty} шт`);
+            const calcString = calcParts.join(' + ') || '0';
+
+            // Вивід результату
             const html = `
                 <h3>Результат:</h3>
                 <p><strong>Розрахунок:</strong> ${calcString}</p>
@@ -114,6 +96,7 @@
 
             results.innerHTML = html;
 
+            // Оновлення історії
             history.unshift({ html });
             if (history.length > 10) history.pop();
             localStorage.setItem('calculationHistory', JSON.stringify(history));
@@ -122,10 +105,8 @@
 
         function updateHistory() {
             const div = document.getElementById('history');
-            if (history.length) {
-                div.innerHTML = '<h3>Історія розрахунків:</h3>' +
-                  history.map(h => `<div class="history-item">${h.html}</div>`).join('');
-            } else div.innerHTML = '';
+            if (history.length) div.innerHTML = '<h3>Історія розрахунків:</h3>' + history.map(h => `<div class="history-item">${h.html}</div>`).join('');
+            else div.innerHTML = '';
         }
 
         function clearHistory() {
